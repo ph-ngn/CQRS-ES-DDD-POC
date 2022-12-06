@@ -1,50 +1,35 @@
 package common
 
 type Entity interface {
-	ID() string
+	GetID() string
 }
 
 type AggregateRoot interface {
 	Entity
-	Apply(Event, bool)
-	TrackChange(Event)
-	GetChanges() []Event
-	ClearChanges()
-	OriginalVersion() int
-	CurrentVersion() int
-	IncrementVersion()
+	Apply([]Event)
+	AddEvent(Event)
+	GetEvents() []Event
+	ClearEvents()
 }
 
 type AggregateBase struct {
 	id      string
 	version int
-	changes []Event
+	events  []Event
 }
 
-func (a *AggregateBase) ID() string {
+func (a *AggregateBase) GetID() string {
 	return a.id
 }
 
-func (a *AggregateBase) TrackChange(event Event) {
-	a.changes = append(a.changes, event)
+func (a *AggregateBase) AddEvent(event Event) {
+	a.events = append(a.events, event)
 }
 
-func (a *AggregateBase) GetChanges() []Event {
-	return a.changes
+func (a *AggregateBase) GetEvents() []Event {
+	return a.events
 }
 
-func (a *AggregateBase) ClearChanges() {
-	a.changes = []Event{}
-}
-
-func (a *AggregateBase) OriginalVersion() int {
-	return a.version
-}
-
-func (a *AggregateBase) CurrentVersion() int {
-	return a.version + len(a.changes)
-}
-
-func (a *AggregateBase) IncrementVersion() {
-	a.version++
+func (a *AggregateBase) ClearEvents() {
+	a.events = []Event{}
 }

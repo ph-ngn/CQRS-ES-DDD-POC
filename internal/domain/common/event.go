@@ -3,18 +3,18 @@ package common
 import "reflect"
 
 type Event interface {
-	AggregateID() string
-	EventType() string
+	GetAggregateID() string
+	GetEventType() string
 }
 
 type EventBase struct {
-	aggregateID string
+	AggregateID string
 }
 
-func (e *EventBase) AggregateID() string {
-	return e.aggregateID
+func (e EventBase) GetAggregateID() string {
+	return e.AggregateID
 }
 
-func (e *EventBase) EventType() string {
+func (e *EventBase) GetEventType() string {
 	return reflect.TypeOf(e).Elem().Name()
 }
