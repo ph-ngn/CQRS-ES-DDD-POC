@@ -11,7 +11,7 @@ type EventBase struct {
 	AggregateID string
 }
 
-func (e EventBase) GetAggregateID() string {
+func (e *EventBase) GetAggregateID() string {
 	return e.AggregateID
 }
 

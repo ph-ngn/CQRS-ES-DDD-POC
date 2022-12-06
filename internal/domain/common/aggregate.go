@@ -13,23 +13,22 @@ type AggregateRoot interface {
 }
 
 type AggregateBase struct {
-	id      string
-	version int
-	events  []Event
+	ID     string
+	Events []Event
 }
 
 func (a *AggregateBase) GetID() string {
-	return a.id
+	return a.ID
 }
 
 func (a *AggregateBase) AddEvent(event Event) {
-	a.events = append(a.events, event)
+	a.Events = append(a.Events, event)
 }
 
 func (a *AggregateBase) GetEvents() []Event {
-	return a.events
+	return a.Events
 }
 
 func (a *AggregateBase) ClearEvents() {
-	a.events = []Event{}
+	a.Events = []Event{}
 }

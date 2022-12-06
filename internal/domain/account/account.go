@@ -12,7 +12,14 @@ type Account struct {
 }
 
 func (a *Account) Apply(events []common.Event) {
-	return
+	for _, event := range events {
+		switch e := event.(type) {
+		case *FundsAdded:
+			a.Balance.Add(e.Funds)
+		case *FundsUsed:
+			a.Balance.Deduct(e.amount)
+		}
+	}
 }
 func (a *Account) AddFunds(funds Funds) error {
 	if err := a.Balance.Add(funds); err != nil {
