@@ -6,29 +6,33 @@ type Entity interface {
 
 type AggregateRoot interface {
 	Entity
-	Apply([]Event)
-	AddEvent(Event)
-	GetEvents() []Event
-	ClearEvents()
+	Apply(Event)
+	TrackChange(Event)
+	GetChanges() []Event
+	ClearChanges()
 }
 
 type AggregateBase struct {
-	ID     string
-	Events []Event
+	ID      string
+	changes []Event
+}
+
+func NewAggregateBase(id string) *AggregateBase {
+	return &AggregateBase{ID: id}
 }
 
 func (a *AggregateBase) GetID() string {
 	return a.ID
 }
 
-func (a *AggregateBase) AddEvent(event Event) {
-	a.Events = append(a.Events, event)
+func (a *AggregateBase) TrackChange(event Event) {
+	a.changes = append(a.changes, event)
 }
 
-func (a *AggregateBase) GetEvents() []Event {
-	return a.Events
+func (a *AggregateBase) GetChanges() []Event {
+	return a.changes
 }
 
-func (a *AggregateBase) ClearEvents() {
-	a.Events = []Event{}
+func (a *AggregateBase) ClearChanges() {
+	a.changes = []Event{}
 }

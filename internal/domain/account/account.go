@@ -5,52 +5,65 @@ import "github.com/andyj29/wannabet/internal/domain/common"
 var _ common.AggregateRoot = (*Account)(nil)
 
 type Account struct {
-	common.AggregateBase
-	Email   string
+	*common.AggregateBase
+	Email   Email
 	Name    string
-	Balance Funds
+	Balance Money
 }
 
-func (a *Account) Apply(events []common.Event) {
-	for _, event := range events {
-		switch e := event.(type) {
-		case *FundsAdded:
-			a.Balance.Add(e.Funds)
-		case *FundsUsed:
-			a.Balance.Deduct(e.amount)
-		}
+func (a *Account) Apply(event common.Event) {
+	a.TrackChange(event)
+	switch e := event.(type) {
+
+	case AccountCreated:
+		a.ID = e.GetAggregateID()
+		a.Email = e.Email
+		a.Name = e.Name
+		a.Balance = Money{Currency: Currency{Name: "Canadian Dollar", Code: "CAD"}}
+
+	case FundsAdded:
+		a.Balance.Add(e.Funds.Amount)
+
+	case FundsUsed:
+		a.Balance.Deduct(e.amount.Amount)
 	}
 }
-func (a *Account) AddFunds(funds Funds) error {
-	if err := a.Balance.Add(funds); err != nil {
-		return err
+
+func (a *Account) AddFunds(funds Money) error {
+	if !a.Balance.CanBeAdded(funds) {
+		return FundsNotAddable
 	}
 
 	fundsAddedEvent := FundsAdded{}
 	fundsAddedEvent.AggregateID = a.GetID()
 	fundsAddedEvent.Funds = funds
 
-	a.AddEvent(&fundsAddedEvent)
+	a.Apply(fundsAddedEvent)
+
 	return nil
 }
 
-func (a *Account) UseFunds(amount int64) error {
-	if err := a.Balance.Deduct(amount); err != nil {
-		return err
+func (a *Account) UseFunds(amount Money) error {
+	if !a.Balance.CanBeDeducted(amount) {
+		return FundsNotDeductible
 	}
 
 	FundsUsedEvent := FundsUsed{}
 	FundsUsedEvent.AggregateID = a.GetID()
 	FundsUsedEvent.amount = amount
 
-	a.AddEvent(&FundsUsedEvent)
+	a.Apply(FundsUsedEvent)
 	return nil
 }
 
-func New(email, name string) *Account {
-	return &Account{
-		Email:   email,
-		Name:    name,
-		Balance: Funds{Currency: Currency{Name: "Canadian Dollar", Code: "CAD"}},
-	}
+func New(id, name string, email Email) *Account {
+	AccountCreatedEvent := AccountCreated{}
+	AccountCreatedEvent.AggregateID = id
+	AccountCreatedEvent.Email = email
+	AccountCreatedEvent.Name = name
+
+	account := Account{}
+	account.Apply(AccountCreatedEvent)
+
+	return &account
 }

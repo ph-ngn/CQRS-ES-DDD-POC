@@ -2,7 +2,7 @@ package common
 
 import "reflect"
 
-type Comnmand interface {
+type Command interface {
 	GetAggregateID() string
 	GetCommandType() string
 }
@@ -17,4 +17,13 @@ func (c *CommandBase) GetAggregateID() string {
 
 func (c *CommandBase) GetCommandType() string {
 	return reflect.TypeOf(c).Elem().Name()
+}
+
+type CommandHandler interface {
+	Handle(Command)
+}
+
+type CommandDispatchcer interface {
+	Dispatch(Command) error
+	RegisterHandler(Command, CommandHandler) error
 }
