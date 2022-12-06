@@ -6,44 +6,48 @@ func EmailFromString(str string) Email {
 	return Email(str)
 }
 
+func CurrencyFromCode(code string) Currency {
+	return Currency{Name: "Canadian Dollar", Code: "CAD"}
+}
+
 type Currency struct {
 	Name string
 	Code string
 }
 
-type Funds struct {
+type Money struct {
 	Amount   int64
 	Currency Currency
 }
 
-func (f *Funds) IsCompatible(other Funds) bool {
+func (f *Money) IsCompatible(other Money) bool {
 	return f.Currency == other.Currency
 }
 
-func (f *Funds) CanBeAdded(other Funds) bool {
+func (f *Money) CanBeAdded(other Money) bool {
 	return f.IsCompatible(other) && other.Amount > 0
 }
 
-func (f *Funds) CanBeDeducted(other Funds) bool {
+func (f *Money) CanBeDeducted(other Money) bool {
 	return f.IsCompatible(other) && f.Amount >= other.Amount
 }
 
-func (f *Funds) EqualTo(other Funds) bool {
+func (f *Money) EqualTo(other Money) bool {
 	return f.Amount == other.Amount
 }
 
-func (f *Funds) GreaterThan(other Funds) bool {
+func (f *Money) GreaterThan(other Money) bool {
 	return f.Amount > other.Amount
 }
 
-func (f *Funds) LessThan(other Funds) bool {
+func (f *Money) LessThan(other Money) bool {
 	return f.Amount < other.Amount
 }
 
-func (f *Funds) Add(amount int64) {
+func (f *Money) Add(amount int64) {
 	f.Amount += amount
 }
 
-func (f *Funds) Deduct(amount int64) {
+func (f *Money) Deduct(amount int64) {
 	f.Amount -= amount
 }
