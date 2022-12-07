@@ -1,23 +1,21 @@
-package account
-
-type Email string
-
-func EmailFromString(str string) Email {
-	return Email(str)
-}
-
-func CurrencyFromCode(code string) Currency {
-	return Currency{Name: "Canadian Dollar", Code: "CAD"}
-}
+package common
 
 type Currency struct {
 	Name string
 	Code string
 }
 
+func CurrencyFromCode(code string) Currency {
+	return Currency{Name: "Canadian Dollar", Code: "CAD"}
+}
+
 type Money struct {
 	Amount   int64
 	Currency Currency
+}
+
+func NewMoney(amount int64, code string) Money {
+	return Money{Amount: amount, Currency: CurrencyFromCode(code)}
 }
 
 func (f *Money) IsCompatible(other Money) bool {

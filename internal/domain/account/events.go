@@ -10,10 +10,10 @@ type AccountCreated struct {
 
 type FundsAdded struct {
 	*common.EventBase
-	Funds Money
+	Funds common.Money
 }
 
 type FundsUsed struct {
 	*common.EventBase
-	amount Money
+	amount common.Money
 }

@@ -3,6 +3,7 @@ package account
 import (
 	"github.com/andyj29/wannabet/internal/application/common"
 	"github.com/andyj29/wannabet/internal/domain/account"
+	domainCommon "github.com/andyj29/wannabet/internal/domain/common"
 )
 
 type RegisterAccount struct {
@@ -34,9 +35,7 @@ type DepositFundsHandler struct {
 
 func (h *DepositFundsHandler) Handle(cmd DepositFunds) error {
 	loadedAccount := h.repo.Load(cmd.GetAggregateID())
-	funds := account.Money{
-		Amount:   cmd.Amount,
-		Currency: account.CurrencyFromCode(cmd.CurrencyCode)}
+	funds := domainCommon.NewMoney(cmd.Amount, cmd.CurrencyCode)
 
 	err := loadedAccount.AddFunds(funds)
 	if err != nil {
@@ -59,9 +58,7 @@ type UseFundsHandler struct {
 
 func (h *UseFundsHandler) Handle(cmd UseFunds) error {
 	loadedAccount := h.repo.Load(cmd.GetAggregateID())
-	amount := account.Money{
-		Amount:   cmd.Amount,
-		Currency: account.CurrencyFromCode(cmd.CurrencyCode)}
+	amount := domainCommon.NewMoney(cmd.Amount, cmd.CurrencyCode)
 
 	err := loadedAccount.UseFunds(amount)
 	if err != nil {

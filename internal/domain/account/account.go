@@ -4,22 +4,27 @@ import "github.com/andyj29/wannabet/internal/domain/common"
 
 var _ common.AggregateRoot = (*Account)(nil)
 
+type Email string
+
+func EmailFromString(str string) Email {
+	return Email(str)
+}
+
 type Account struct {
 	*common.AggregateBase
 	Email   Email
 	Name    string
-	Balance Money
+	Balance common.Money
 }
 
 func (a *Account) Apply(event common.Event) {
 	a.TrackChange(event)
 	switch e := event.(type) {
-
 	case AccountCreated:
 		a.ID = e.GetAggregateID()
 		a.Email = e.Email
 		a.Name = e.Name
-		a.Balance = Money{Currency: Currency{Name: "Canadian Dollar", Code: "CAD"}}
+		a.Balance = common.Money{Currency: common.CurrencyFromCode("CAD")}
 
 	case FundsAdded:
 		a.Balance.Add(e.Funds.Amount)
@@ -29,7 +34,7 @@ func (a *Account) Apply(event common.Event) {
 	}
 }
 
-func (a *Account) AddFunds(funds Money) error {
+func (a *Account) AddFunds(funds common.Money) error {
 	if !a.Balance.CanBeAdded(funds) {
 		return FundsNotAddable
 	}
@@ -43,7 +48,7 @@ func (a *Account) AddFunds(funds Money) error {
 	return nil
 }
 
-func (a *Account) UseFunds(amount Money) error {
+func (a *Account) UseFunds(amount common.Money) error {
 	if !a.Balance.CanBeDeducted(amount) {
 		return FundsNotDeductible
 	}
@@ -53,6 +58,7 @@ func (a *Account) UseFunds(amount Money) error {
 	FundsUsedEvent.amount = amount
 
 	a.Apply(FundsUsedEvent)
+
 	return nil
 }
 
