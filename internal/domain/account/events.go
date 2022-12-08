@@ -13,7 +13,29 @@ type FundsAdded struct {
 	Funds common.Money
 }
 
-type FundsUsed struct {
+type FundsDeducted struct {
 	*common.EventBase
-	amount common.Money
+	Amount common.Money
+}
+
+func NewAccountCreatedEvent(aggregateID, name string, email Email) *AccountCreated {
+	return &AccountCreated{
+		EventBase: &common.EventBase{AggregateID: aggregateID},
+		Email:     email,
+		Name:      name,
+	}
+}
+
+func NewFundsAddedEvent(aggregateID string, funds common.Money) *FundsAdded {
+	return &FundsAdded{
+		EventBase: &common.EventBase{AggregateID: aggregateID},
+		Funds:     funds,
+	}
+}
+
+func NewFundsDeductedEvent(aggregateID string, amount common.Money) *FundsDeducted {
+	return &FundsDeducted{
+		EventBase: &common.EventBase{AggregateID: aggregateID},
+		Amount:    amount,
+	}
 }

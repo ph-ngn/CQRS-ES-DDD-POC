@@ -27,7 +27,7 @@ func (f *Money) CanBeAdded(other Money) bool {
 }
 
 func (f *Money) CanBeDeducted(other Money) bool {
-	return f.IsCompatible(other) && f.Amount >= other.Amount
+	return f.IsCompatible(other) && f.Amount >= other.Amount && other.Amount > 0
 }
 
 func (f *Money) EqualTo(other Money) bool {
@@ -42,10 +42,18 @@ func (f *Money) LessThan(other Money) bool {
 	return f.Amount < other.Amount
 }
 
-func (f *Money) Add(amount int64) {
-	f.Amount += amount
+func (f *Money) Add(funds Money) error {
+	if ok := f.CanBeAdded(funds); ok {
+		f.Amount += funds.Amount
+		return nil
+	}
+	return FundsNotAddable
 }
 
-func (f *Money) Deduct(amount int64) {
-	f.Amount -= amount
+func (f *Money) Deduct(amount Money) error {
+	if ok := f.CanBeDeducted(amount); ok {
+		f.Amount -= amount.Amount
+		return nil
+	}
+	return FundsNotDeductible
 }

@@ -15,49 +15,38 @@ type Offer struct {
 	Bets      []*Bet
 }
 
-type OfferSettings struct {
-	ID        string
-	OffererID string
-	GameID    string
-	Favorite  string
-	Limit     common.Money
+func NewOffer() *Offer {
+	return &Offer{}
 }
 
-func (o *Offer) Apply(event common.Event) {
-	o.TrackChange(event)
-	switch e := event.(type) {
-	case OfferCreated:
-		o.ID = e.GetAggregateID()
-		o.OffererID = e.OffererID
-		o.GameID = e.GameID
-		o.Favorite = e.Favorite
-		o.Limit = e.Limit
-
-	case BetPlaced:
-		o.Bets = append(o.Bets, e.Bet)
+func (o *Offer) When(event common.Event, isNew bool) (err error) {
+	if isNew {
+		o.TrackChange(event)
 	}
+
+	switch e := event.(type) {
+	case *OfferCreated:
+		err = o.onOfferCreated(e)
+
+	case *BetPlaced:
+		err = o.onBetPlaced(e)
+	}
+
+	return err
 }
 
-func NewOffer(offerSettings OfferSettings) *Offer {
-	OfferCreatedEvent := OfferCreated{}
-	OfferCreatedEvent.AggregateID = offerSettings.ID
-	OfferCreatedEvent.OffererID = offerSettings.OffererID
-	OfferCreatedEvent.GameID = offerSettings.GameID
-	OfferCreatedEvent.Favorite = offerSettings.Favorite
-	OfferCreatedEvent.Limit = offerSettings.Limit
+func (o *Offer) onOfferCreated(event *OfferCreated) error {
+	o.ID = event.GetAggregateID()
+	o.OffererID = event.OffererID
+	o.GameID = event.GameID
+	o.Favorite = event.Favorite
+	o.Limit = event.Limit
 
-	offer := Offer{}
-	offer.Apply(OfferCreatedEvent)
-
-	return &offer
+	return nil
 }
 
-func (o *Offer) PlaceBet(bet *Bet) error {
-	BetPlacedEvent := BetPlaced{}
-	BetPlacedEvent.AggregateID = o.GetID()
-	BetPlacedEvent.Bet = bet
-
-	o.Apply(BetPlacedEvent)
-
+func (o *Offer) onBetPlaced(event *BetPlaced) error {
+	// TO BE VALIDATED
+	o.Bets = append(o.Bets, event.Bet)
 	return nil
 }

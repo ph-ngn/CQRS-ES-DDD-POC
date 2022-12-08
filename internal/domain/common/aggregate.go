@@ -6,7 +6,7 @@ type Entity interface {
 
 type AggregateRoot interface {
 	Entity
-	Apply(Event)
+	When(Event, bool) error
 	TrackChange(Event)
 	GetChanges() []Event
 	ClearChanges()

@@ -17,59 +17,46 @@ type Account struct {
 	Balance common.Money
 }
 
-func (a *Account) Apply(event common.Event) {
-	a.TrackChange(event)
+func (a *Account) When(event common.Event, isNew bool) (err error) {
+	if isNew {
+		a.TrackChange(event)
+	}
+
 	switch e := event.(type) {
-	case AccountCreated:
-		a.ID = e.GetAggregateID()
-		a.Email = e.Email
-		a.Name = e.Name
-		a.Balance = common.Money{Currency: common.CurrencyFromCode("CAD")}
+	case *AccountCreated:
+		a.onAccountCreated(e)
 
-	case FundsAdded:
-		a.Balance.Add(e.Funds.Amount)
+	case *FundsAdded:
+		err = a.onFundsAdded(e)
 
-	case FundsUsed:
-		a.Balance.Deduct(e.amount.Amount)
+	case *FundsDeducted:
+		err = a.onFundsDeducted(e)
 	}
+
+	return err
 }
 
-func (a *Account) AddFunds(funds common.Money) error {
-	if !a.Balance.CanBeAdded(funds) {
-		return FundsNotAddable
+func (a *Account) onAccountCreated(event *AccountCreated) {
+	a.ID = event.GetAggregateID()
+	a.Email = event.Email
+	a.Name = event.Name
+	a.Balance = common.NewMoney(0, "CAD")
+}
+
+func (a *Account) onFundsAdded(event *FundsAdded) error {
+	if err := a.Balance.Add(event.Funds); err != nil {
+		return err
 	}
-
-	fundsAddedEvent := FundsAdded{}
-	fundsAddedEvent.AggregateID = a.GetID()
-	fundsAddedEvent.Funds = funds
-
-	a.Apply(fundsAddedEvent)
-
 	return nil
 }
 
-func (a *Account) UseFunds(amount common.Money) error {
-	if !a.Balance.CanBeDeducted(amount) {
-		return FundsNotDeductible
+func (a *Account) onFundsDeducted(event *FundsDeducted) error {
+	if err := a.Balance.Deduct(event.Amount); err != nil {
+		return err
 	}
-
-	FundsUsedEvent := FundsUsed{}
-	FundsUsedEvent.AggregateID = a.GetID()
-	FundsUsedEvent.amount = amount
-
-	a.Apply(FundsUsedEvent)
-
 	return nil
 }
 
-func New(id, name string, email Email) *Account {
-	AccountCreatedEvent := AccountCreated{}
-	AccountCreatedEvent.AggregateID = id
-	AccountCreatedEvent.Email = email
-	AccountCreatedEvent.Name = name
-
-	account := Account{}
-	account.Apply(AccountCreatedEvent)
-
-	return &account
+func NewAccount() *Account {
+	return &Account{}
 }
