@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"reflect"
 	"sync"
 )
@@ -23,11 +24,11 @@ func (c *CommandBase) GetCommandType() string {
 }
 
 type CommandHandler interface {
-	Handle(Command) error
+	Handle(Command, chan<- error)
 }
 
-type Dispatchcer interface {
-	Dispatch(Command) error
+type Dispatcher interface {
+	Dispatch(context.Context, Command) error
 	RegisterHandler(Command, CommandHandler) error
 }
 
@@ -41,14 +42,24 @@ func NewInMemoryDispatcher() *InMemoryDispatcher {
 	}
 }
 
-func (d *InMemoryDispatcher) Dispatch(cmd Command) error {
+func (d *InMemoryDispatcher) Dispatch(ctx context.Context, cmd Command) error {
 	cmdMu.RLock()
 	defer cmdMu.Unlock()
 
-	if handler, ok := d.handlers[cmd.GetCommandType()]; ok {
-		return handler.Handle(cmd)
+	errChannel := make(chan error)
+
+	handler, ok := d.handlers[cmd.GetCommandType()]
+	if !ok {
+		return CommandHandlerNotFound
 	}
-	return CommandHandlerNotFound
+	handler.Handle(cmd, errChannel)
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-errChannel:
+		return err
+	}
 }
 
 func (d *InMemoryDispatcher) RegisterHandler(cmd Command, handler CommandHandler) error {

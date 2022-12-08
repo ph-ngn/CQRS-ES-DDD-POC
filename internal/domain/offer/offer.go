@@ -4,38 +4,38 @@ import (
 	"github.com/andyj29/wannabet/internal/domain/common"
 )
 
-var _ common.AggregateRoot = (*Offer)(nil)
+var _ common.AggregateRoot = (*offer)(nil)
 
-type Offer struct {
+type offer struct {
 	*common.AggregateBase
 	OffererID string
 	GameID    string
 	Favorite  string
 	Limit     common.Money
-	Bets      []*Bet
+	Bets      []*bet
 }
 
-func NewOffer() *Offer {
-	return &Offer{}
+func NewOffer() *offer {
+	return &offer{}
 }
 
-func (o *Offer) When(event common.Event, isNew bool) (err error) {
-	if isNew {
-		o.TrackChange(event)
-	}
-
+func (o *offer) When(event common.Event, isNew bool) (err error) {
 	switch e := event.(type) {
-	case *OfferCreated:
+	case *offerCreated:
 		err = o.onOfferCreated(e)
 
-	case *BetPlaced:
+	case *betPlaced:
 		err = o.onBetPlaced(e)
+	}
+
+	if isNew && err == nil {
+		o.TrackChange(event)
 	}
 
 	return err
 }
 
-func (o *Offer) onOfferCreated(event *OfferCreated) error {
+func (o *offer) onOfferCreated(event *offerCreated) error {
 	o.ID = event.GetAggregateID()
 	o.OffererID = event.OffererID
 	o.GameID = event.GameID
@@ -45,8 +45,8 @@ func (o *Offer) onOfferCreated(event *OfferCreated) error {
 	return nil
 }
 
-func (o *Offer) onBetPlaced(event *BetPlaced) error {
-	// TO BE VALIDATED
+func (o *offer) onBetPlaced(event *betPlaced) error {
+	// TO CHECK INVARIANT LATER
 	o.Bets = append(o.Bets, event.Bet)
 	return nil
 }

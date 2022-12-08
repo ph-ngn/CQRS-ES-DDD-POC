@@ -2,39 +2,39 @@ package account
 
 import "github.com/andyj29/wannabet/internal/domain/common"
 
-type AccountCreated struct {
+type accountCreated struct {
 	*common.EventBase
 	Email Email
 	Name  string
 }
 
-type FundsAdded struct {
+type fundsAdded struct {
 	*common.EventBase
 	Funds common.Money
 }
 
-type FundsDeducted struct {
+type fundsDeducted struct {
 	*common.EventBase
 	Amount common.Money
 }
 
-func NewAccountCreatedEvent(aggregateID, name string, email Email) *AccountCreated {
-	return &AccountCreated{
+func NewAccountCreatedEvent(aggregateID, name string, email Email) *accountCreated {
+	return &accountCreated{
 		EventBase: &common.EventBase{AggregateID: aggregateID},
 		Email:     email,
 		Name:      name,
 	}
 }
 
-func NewFundsAddedEvent(aggregateID string, funds common.Money) *FundsAdded {
-	return &FundsAdded{
+func NewFundsAddedEvent(aggregateID string, funds common.Money) *fundsAdded {
+	return &fundsAdded{
 		EventBase: &common.EventBase{AggregateID: aggregateID},
 		Funds:     funds,
 	}
 }
 
-func NewFundsDeductedEvent(aggregateID string, amount common.Money) *FundsDeducted {
-	return &FundsDeducted{
+func NewFundsDeductedEvent(aggregateID string, amount common.Money) *fundsDeducted {
+	return &fundsDeducted{
 		EventBase: &common.EventBase{AggregateID: aggregateID},
 		Amount:    amount,
 	}

@@ -2,7 +2,7 @@ package account
 
 import "github.com/andyj29/wannabet/internal/domain/common"
 
-var _ common.AggregateRoot = (*Account)(nil)
+var _ common.AggregateRoot = (*account)(nil)
 
 type Email string
 
@@ -10,53 +10,55 @@ func EmailFromString(str string) Email {
 	return Email(str)
 }
 
-type Account struct {
+type account struct {
 	*common.AggregateBase
 	Email   Email
 	Name    string
 	Balance common.Money
 }
 
-func (a *Account) When(event common.Event, isNew bool) (err error) {
-	if isNew {
-		a.TrackChange(event)
-	}
-
+func (a *account) When(event common.Event, isNew bool) (err error) {
 	switch e := event.(type) {
-	case *AccountCreated:
-		a.onAccountCreated(e)
+	case *accountCreated:
+		err = a.onAccountCreated(e)
 
-	case *FundsAdded:
+	case *fundsAdded:
 		err = a.onFundsAdded(e)
 
-	case *FundsDeducted:
+	case *fundsDeducted:
 		err = a.onFundsDeducted(e)
+	}
+
+	if isNew && err == nil {
+		a.TrackChange(event)
 	}
 
 	return err
 }
 
-func (a *Account) onAccountCreated(event *AccountCreated) {
+func (a *account) onAccountCreated(event *accountCreated) error {
 	a.ID = event.GetAggregateID()
 	a.Email = event.Email
 	a.Name = event.Name
 	a.Balance = common.NewMoney(0, "CAD")
+
+	return nil
 }
 
-func (a *Account) onFundsAdded(event *FundsAdded) error {
+func (a *account) onFundsAdded(event *fundsAdded) error {
 	if err := a.Balance.Add(event.Funds); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *Account) onFundsDeducted(event *FundsDeducted) error {
+func (a *account) onFundsDeducted(event *fundsDeducted) error {
 	if err := a.Balance.Deduct(event.Amount); err != nil {
 		return err
 	}
 	return nil
 }
 
-func NewAccount() *Account {
-	return &Account{}
+func NewAccount() *account {
+	return &account{}
 }

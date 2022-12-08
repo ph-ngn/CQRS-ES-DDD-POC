@@ -13,7 +13,7 @@ type RegisterAccount struct {
 }
 
 type RegisterAccountHandler struct {
-	repo     AccountRepository
+	repo     common.Repository
 	eventBus common.EventBus
 }
 
@@ -24,7 +24,7 @@ type AddFunds struct {
 }
 
 type AddFundsHandler struct {
-	repo     AccountRepository
+	repo     common.Repository
 	eventBus common.EventBus
 }
 
@@ -34,40 +34,43 @@ type UseFunds struct {
 	CurrencyCode string
 }
 
-type UseFundsHandler struct {
-	repo     AccountRepository
+type DeductFundsHandler struct {
+	repo     common.Repository
 	eventBus common.EventBus
 }
 
-func (h *RegisterAccountHandler) Handle(cmd RegisterAccount) error {
+func (h *RegisterAccountHandler) Handle(cmd RegisterAccount, errChannel chan<- error) {
 	newAccount := account.NewAccount()
 	accountCreatedEvent := account.NewAccountCreatedEvent(cmd.GetAggregateID(), cmd.Name, account.EmailFromString(cmd.Email))
 
 	if err := newAccount.When(accountCreatedEvent, true); err != nil {
-		return err
+		errChannel <- err
+		return
 	}
-
-	return h.repo.Save(newAccount)
+	errChannel <- nil
+	h.repo.Save(newAccount)
 }
 
-func (h *AddFundsHandler) Handle(cmd AddFunds) error {
+func (h *AddFundsHandler) Handle(cmd AddFunds, errChannel chan<- error) {
 	loadedAccount := h.repo.Load(cmd.GetAggregateID())
 	fundsAddedEvent := account.NewFundsAddedEvent(cmd.GetAggregateID(), domainCommon.NewMoney(cmd.Amount, cmd.CurrencyCode))
 
 	if err := loadedAccount.When(fundsAddedEvent, true); err != nil {
-		return err
+		errChannel <- err
+		return
 	}
-
-	return h.repo.Save(loadedAccount)
+	errChannel <- nil
+	h.repo.Save(loadedAccount)
 }
 
-func (h *UseFundsHandler) Handle(cmd UseFunds) error {
+func (h *DeductFundsHandler) Handle(cmd UseFunds, errChannel chan<- error) {
 	loadedAccount := h.repo.Load(cmd.GetAggregateID())
 	fundsDeductedEvent := account.NewFundsDeductedEvent(cmd.GetAggregateID(), domainCommon.NewMoney(cmd.Amount, cmd.CurrencyCode))
 
 	if err := loadedAccount.When(fundsDeductedEvent, true); err != nil {
-		return err
+		errChannel <- err
+		return
 	}
-
-	return h.repo.Save(loadedAccount)
+	errChannel <- nil
+	h.repo.Save(loadedAccount)
 }
