@@ -6,10 +6,6 @@ var _ common.AggregateRoot = (*account)(nil)
 
 type Email string
 
-func EmailFromString(str string) Email {
-	return Email(str)
-}
-
 type account struct {
 	*common.AggregateBase
 	Email   Email

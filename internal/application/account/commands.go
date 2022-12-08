@@ -6,71 +6,111 @@ import (
 	domainCommon "github.com/andyj29/wannabet/internal/domain/common"
 )
 
-type RegisterAccount struct {
+type registerAccount struct {
 	*common.CommandBase
 	Email string
 	Name  string
 }
 
-type RegisterAccountHandler struct {
+type registerAccountHandler struct {
 	repo     common.Repository
 	eventBus common.EventBus
 }
 
-type AddFunds struct {
+type addFunds struct {
 	*common.CommandBase
 	Amount       int64
 	CurrencyCode string
 }
 
-type AddFundsHandler struct {
+type addFundsHandler struct {
 	repo     common.Repository
 	eventBus common.EventBus
 }
 
-type UseFunds struct {
+type deductFunds struct {
 	*common.CommandBase
 	Amount       int64
 	CurrencyCode string
 }
 
-type DeductFundsHandler struct {
+type deductFundsHandler struct {
 	repo     common.Repository
 	eventBus common.EventBus
 }
 
-func (h *RegisterAccountHandler) Handle(cmd RegisterAccount, errChannel chan<- error) {
+func NewRegisterAccountCommand(aggregateID, email, name string) *registerAccount {
+	return &registerAccount{
+		CommandBase: common.NewCommandBase(aggregateID),
+		Email:       email,
+		Name:        name,
+	}
+}
+
+func NewAddFundsCommand(aggregateID string, amount int64, currencyCode string) *addFunds {
+	return &addFunds{
+		CommandBase:  common.NewCommandBase(aggregateID),
+		Amount:       amount,
+		CurrencyCode: currencyCode,
+	}
+}
+
+func NewDeductFundsCommand(aggregateID string, amount int64, currencyCode string) *deductFunds {
+	return &deductFunds{
+		CommandBase:  common.NewCommandBase(aggregateID),
+		Amount:       amount,
+		CurrencyCode: currencyCode,
+	}
+}
+
+func NewRegisterAccountHandler(repo common.Repository, eventBus common.EventBus) *registerAccountHandler {
+	return &registerAccountHandler{
+		repo:     repo,
+		eventBus: eventBus,
+	}
+}
+
+func NewAddFundsHandler(repo common.Repository, eventBus common.EventBus) *addFundsHandler {
+	return &addFundsHandler{
+		repo:     repo,
+		eventBus: eventBus,
+	}
+}
+
+func NewDeductFundsHandler(repo common.Repository, eventBus common.EventBus) *deductFundsHandler {
+	return &deductFundsHandler{
+		repo:     repo,
+		eventBus: eventBus,
+	}
+}
+
+func (h *registerAccountHandler) Handle(cmd registerAccount) error {
 	newAccount := account.NewAccount()
-	accountCreatedEvent := account.NewAccountCreatedEvent(cmd.GetAggregateID(), cmd.Name, account.EmailFromString(cmd.Email))
+	accountCreatedEvent := account.NewAccountCreatedEvent(cmd.GetAggregateID(), account.Email(cmd.Email), cmd.Name)
 
 	if err := newAccount.When(accountCreatedEvent, true); err != nil {
-		errChannel <- err
-		return
+		return err
 	}
-	errChannel <- nil
-	h.repo.Save(newAccount)
+
+	return h.repo.Save(newAccount)
 }
 
-func (h *AddFundsHandler) Handle(cmd AddFunds, errChannel chan<- error) {
+func (h *addFundsHandler) Handle(cmd addFunds) error {
 	loadedAccount := h.repo.Load(cmd.GetAggregateID())
 	fundsAddedEvent := account.NewFundsAddedEvent(cmd.GetAggregateID(), domainCommon.NewMoney(cmd.Amount, cmd.CurrencyCode))
 
 	if err := loadedAccount.When(fundsAddedEvent, true); err != nil {
-		errChannel <- err
-		return
+		return err
 	}
-	errChannel <- nil
-	h.repo.Save(loadedAccount)
+	return h.repo.Save(loadedAccount)
 }
 
-func (h *DeductFundsHandler) Handle(cmd UseFunds, errChannel chan<- error) {
+func (h *deductFundsHandler) Handle(cmd deductFunds) error {
 	loadedAccount := h.repo.Load(cmd.GetAggregateID())
 	fundsDeductedEvent := account.NewFundsDeductedEvent(cmd.GetAggregateID(), domainCommon.NewMoney(cmd.Amount, cmd.CurrencyCode))
 
 	if err := loadedAccount.When(fundsDeductedEvent, true); err != nil {
-		errChannel <- err
-		return
+		return err
 	}
-	errChannel <- nil
-	h.repo.Save(loadedAccount)
+	return h.repo.Save(loadedAccount)
 }

@@ -18,7 +18,7 @@ type fundsDeducted struct {
 	Amount common.Money
 }
 
-func NewAccountCreatedEvent(aggregateID, name string, email Email) *accountCreated {
+func NewAccountCreatedEvent(aggregateID string, email Email, name string) *accountCreated {
 	return &accountCreated{
 		EventBase: &common.EventBase{AggregateID: aggregateID},
 		Email:     email,

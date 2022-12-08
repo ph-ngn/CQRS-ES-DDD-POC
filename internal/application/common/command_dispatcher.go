@@ -1,7 +1,6 @@
 package common
 
 import (
-	"context"
 	"reflect"
 	"sync"
 )
@@ -15,6 +14,10 @@ type CommandBase struct {
 	AggregateID string
 }
 
+func NewCommandBase(aggregateID string) *CommandBase {
+	return &CommandBase{AggregateID: aggregateID}
+}
+
 func (c *CommandBase) GetAggregateID() string {
 	return c.AggregateID
 }
@@ -24,11 +27,11 @@ func (c *CommandBase) GetCommandType() string {
 }
 
 type CommandHandler interface {
-	Handle(Command, chan<- error)
+	Handle(Command) error
 }
 
 type Dispatcher interface {
-	Dispatch(context.Context, Command) error
+	Dispatch(Command) error
 	RegisterHandler(Command, CommandHandler) error
 }
 
@@ -42,24 +45,14 @@ func NewInMemoryDispatcher() *InMemoryDispatcher {
 	}
 }
 
-func (d *InMemoryDispatcher) Dispatch(ctx context.Context, cmd Command) error {
+func (d *InMemoryDispatcher) Dispatch(cmd Command) error {
 	cmdMu.RLock()
 	defer cmdMu.Unlock()
 
-	errChannel := make(chan error)
-
-	handler, ok := d.handlers[cmd.GetCommandType()]
-	if !ok {
-		return CommandHandlerNotFound
+	if handler, ok := d.handlers[cmd.GetCommandType()]; ok {
+		return handler.Handle(cmd)
 	}
-	handler.Handle(cmd, errChannel)
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errChannel:
-		return err
-	}
+	return CommandHandlerNotFound
 }
 
 func (d *InMemoryDispatcher) RegisterHandler(cmd Command, handler CommandHandler) error {

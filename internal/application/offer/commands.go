@@ -32,27 +32,23 @@ type PlaceBetHandler struct {
 	eventBus common.EventBus
 }
 
-func (h *CreateOfferHandler) Handle(cmd CreateOffer, errChannel chan<- error) {
+func (h *CreateOfferHandler) Handle(cmd CreateOffer) error {
 	newOffer := offer.NewOffer()
 	offerCreatedEvent := offer.NewOfferCreatedEvent(cmd.GetAggregateID(), cmd.OffererID, cmd.GameID, cmd.Favorite, domainCommon.NewMoney(cmd.Limit, cmd.CurrencyCode))
 
 	if err := newOffer.When(offerCreatedEvent, true); err != nil {
-		errChannel <- err
-		return
+		return err
 	}
-	errChannel <- nil
-	h.repo.Save(newOffer)
+	return h.repo.Save(newOffer)
 }
 
-func (h *PlaceBetHandler) Handle(cmd PlaceBet, errChannel chan<- error) {
+func (h *PlaceBetHandler) Handle(cmd PlaceBet) error {
 	loadedOffer := h.repo.Load(cmd.GetAggregateID())
 	newBet := offer.NewBet(cmd.BettorID, domainCommon.NewMoney(cmd.Stake, cmd.CurrencyCode))
 	betPlacedEvent := offer.NewBetPlacedEvent(cmd.GetAggregateID(), newBet)
 
 	if err := loadedOffer.When(betPlacedEvent, true); err != nil {
-		errChannel <- err
-		return
+		return err
 	}
-	errChannel <- nil
-	h.repo.Save(loadedOffer)
+	return h.repo.Save(loadedOffer)
 }
