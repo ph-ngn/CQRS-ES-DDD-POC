@@ -92,6 +92,10 @@ func (h *registerAccountHandler) Handle(cmd registerAccount) error {
 		return err
 	}
 
+	if err := h.eventBus.Publish(accountCreatedEvent); err != nil {
+		return err
+	}
+
 	return h.repo.Save(newAccount)
 }
 
@@ -102,6 +106,11 @@ func (h *addFundsHandler) Handle(cmd addFunds) error {
 	if err := loadedAccount.When(fundsAddedEvent, true); err != nil {
 		return err
 	}
+
+	if err := h.eventBus.Publish(fundsAddedEvent); err != nil {
+		return err
+	}
+
 	return h.repo.Save(loadedAccount)
 }
 
@@ -112,5 +121,10 @@ func (h *deductFundsHandler) Handle(cmd deductFunds) error {
 	if err := loadedAccount.When(fundsDeductedEvent, true); err != nil {
 		return err
 	}
+
+	if err := h.eventBus.Publish(fundsDeductedEvent); err != nil {
+		return err
+	}
+
 	return h.repo.Save(loadedAccount)
 }
