@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,32 +14,29 @@ import (
 func ValidateToken() func(next http.Handler) http.Handler {
 	issuerURL, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/")
 	if err != nil {
-		log.Fatalf("Failed to parse the issuer url: %v", err)
+		infraLogger.Fatalf("Failed to parse the issuer url: %v", err)
 	}
 
 	provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
 
-	jwtValidator, err := validator.New(
-		provider.KeyFunc,
+	jwtValidator, err := validator.New(provider.KeyFunc,
 		validator.RS256,
 		issuerURL.String(),
 		[]string{os.Getenv("AUTH0_AUDIENCE")},
-		validator.WithAllowedClockSkew(time.Minute),
-	)
+		validator.WithAllowedClockSkew(time.Minute))
 	if err != nil {
-		log.Fatalf("Failed to set up the jwt validator")
+		infraLogger.Fatalf("Failed to set up the jwt validator")
 	}
 
 	errorHandler := func(w http.ResponseWriter, r *http.Request, err error) {
-		log.Printf("Encountered error while validating JWT: %v", err)
+		infraLogger.Infof("Encountered error while validating JWT: %v", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte(`{"message":"Invalid token"}`))
 	}
 
-	middleware := jwtmiddleware.New(
-		jwtValidator.ValidateToken,
+	middleware := jwtmiddleware.New(jwtValidator.ValidateToken,
 		jwtmiddleware.WithErrorHandler(errorHandler),
 	)
 

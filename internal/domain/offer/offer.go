@@ -5,6 +5,12 @@ import (
 )
 
 var _ common.AggregateRoot = (*offer)(nil)
+var _ Offer = (*offer)(nil)
+
+type Offer interface {
+	common.AggregateRoot
+	PlaceBet(*bet) error
+}
 
 type offer struct {
 	*common.AggregateBase
@@ -15,14 +21,10 @@ type offer struct {
 	Bets      []*bet
 }
 
-func NewOffer() *offer {
-	return &offer{}
-}
-
 func (o *offer) When(event common.Event, isNew bool) (err error) {
 	switch e := event.(type) {
 	case *offerCreated:
-		err = o.onOfferCreated(e)
+		o.onOfferCreated(e)
 
 	case *betPlaced:
 		err = o.onBetPlaced(e)
@@ -35,14 +37,27 @@ func (o *offer) When(event common.Event, isNew bool) (err error) {
 	return err
 }
 
-func (o *offer) onOfferCreated(event *offerCreated) error {
+func NewOffer(id, offererID, gameID, favorite string, limit common.Money) Offer {
+	offerCreatedEvent := NewOfferCreatedEvent(id, offererID, gameID, favorite, limit)
+
+	newOffer := &offer{}
+	newOffer.When(offerCreatedEvent, true)
+
+	return newOffer
+}
+
+func (o *offer) PlaceBet(bet *bet) error {
+	betPlacedEvent := NewBetPlacedEvent(o.GetID(), bet)
+
+	return o.When(betPlacedEvent, true)
+}
+
+func (o *offer) onOfferCreated(event *offerCreated) {
 	o.ID = event.GetAggregateID()
 	o.OffererID = event.OffererID
 	o.GameID = event.GameID
 	o.Favorite = event.Favorite
 	o.Limit = event.Limit
-
-	return nil
 }
 
 func (o *offer) onBetPlaced(event *betPlaced) error {

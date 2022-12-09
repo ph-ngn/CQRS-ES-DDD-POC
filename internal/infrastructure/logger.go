@@ -5,6 +5,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var infraLogger = NewZapLogger()
+
 type zapLogger struct {
 	logger *zap.SugaredLogger
 }

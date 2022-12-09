@@ -17,10 +17,6 @@ type AggregateBase struct {
 	changes []Event
 }
 
-func NewAggregateBase(id string) *AggregateBase {
-	return &AggregateBase{ID: id}
-}
-
 func (a *AggregateBase) GetID() string {
 	return a.ID
 }

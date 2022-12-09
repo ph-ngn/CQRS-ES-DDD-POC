@@ -7,6 +7,5 @@ type EventHandler interface {
 }
 
 type EventBus interface {
-	Publish(common.Event) error
-	RegisterHandlers(common.Event, ...EventHandler) error
+	Publish(common.Event)
 }

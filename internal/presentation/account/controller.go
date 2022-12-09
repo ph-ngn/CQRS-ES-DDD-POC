@@ -14,7 +14,7 @@ type Controller struct {
 }
 
 func (c *Controller) RegisterAccount(w http.ResponseWriter, r *http.Request) {
-	var request accountRegistrationRequest
+	var request registerAccountRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		common.WriteJSONErrorResponse(w, r, common.NewBadRequestError(err))
 		return
@@ -26,5 +26,5 @@ func (c *Controller) RegisterAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	common.WriteJSONResponse(w, r, NewAccountRegistrationResponse(true, "Account is succesfully registered"))
+	common.WriteJSONResponse(w, r, NewRegisterAccountResponse(true, "Account is succesfully registered"))
 }
