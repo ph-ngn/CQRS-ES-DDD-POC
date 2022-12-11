@@ -72,7 +72,6 @@ func (h *createOfferHandler) Handle(cmd createOffer) error {
 		cmd.GameID,
 		cmd.Favorite,
 		domainCommon.NewMoney(cmd.Limit, cmd.CurrencyCode))
-
 	if err := h.repo.Save(newOffer); err != nil {
 		return err
 	}

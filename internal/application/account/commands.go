@@ -86,7 +86,6 @@ func NewDeductFundsHandler(repo Repository, eventBus common.EventBus) *deductFun
 
 func (h *registerAccountHandler) Handle(cmd registerAccount) error {
 	newAccount := account.NewAccount(cmd.GetAggregateID(), account.Email(cmd.Email), cmd.Name)
-
 	if err := h.repo.Save(newAccount); err != nil {
 		return err
 	}

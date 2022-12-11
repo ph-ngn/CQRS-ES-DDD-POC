@@ -61,7 +61,10 @@ func (o *offer) onOfferCreated(event *offerCreated) {
 }
 
 func (o *offer) onBetPlaced(event *betPlaced) error {
-	// TO CHECK INVARIANT LATER
+	if err := o.Limit.Deduct(event.Bet.Stake); err != nil {
+		return err
+	}
+
 	o.Bets = append(o.Bets, event.Bet)
 	return nil
 }
