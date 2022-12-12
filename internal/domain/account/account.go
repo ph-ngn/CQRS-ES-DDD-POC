@@ -1,6 +1,8 @@
 package account
 
-import "github.com/andyj29/wannabet/internal/domain/common"
+import (
+	"github.com/andyj29/wannabet/internal/domain/common"
+)
 
 var _ common.AggregateRoot = (*account)(nil)
 var _ Account = (*account)(nil)
@@ -35,13 +37,11 @@ func (a *account) When(event common.Event, isNew bool) (err error) {
 	if isNew && err == nil {
 		a.TrackChange(event)
 	}
-
 	return err
 }
 
-func NewAccount(id string, email Email, name string) Account {
-	accountCreatedEvent := NewAccountCreatedEvent(id, Email(email), name)
-
+func NewAccount(id string, email Email, name string) *account {
+	accountCreatedEvent := NewAccountCreatedEvent(id, email, name)
 	newAccount := &account{}
 	newAccount.When(accountCreatedEvent, true)
 
@@ -61,22 +61,26 @@ func (a *account) DeductFunds(amount common.Money) error {
 }
 
 func (a *account) onAccountCreated(event *accountCreated) {
-	a.ID = event.GetAggregateID()
+	a.AggregateBase = &common.AggregateBase{ID: event.GetAggregateID()}
 	a.Email = event.Email
 	a.Name = event.Name
 	a.Balance = common.NewMoney(0, "CAD")
 }
 
 func (a *account) onFundsAdded(event *fundsAdded) error {
-	if err := a.Balance.Add(event.Funds); err != nil {
+	newBalance, err := a.Balance.Add(event.Funds)
+	if err != nil {
 		return err
 	}
+	a.Balance = newBalance
 	return nil
 }
 
 func (a *account) onFundsDeducted(event *fundsDeducted) error {
-	if err := a.Balance.Deduct(event.Amount); err != nil {
+	newBalance, err := a.Balance.Deduct(event.Amount)
+	if err != nil {
 		return err
 	}
+	a.Balance = newBalance
 	return nil
 }

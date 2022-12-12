@@ -41,7 +41,7 @@ type deductFundsHandler struct {
 
 func NewRegisterAccountCommand(aggregateID, email, name string) *registerAccount {
 	return &registerAccount{
-		CommandBase: common.NewCommandBase(aggregateID),
+		CommandBase: &common.CommandBase{AggregateID: aggregateID},
 		Email:       email,
 		Name:        name,
 	}
@@ -49,7 +49,7 @@ func NewRegisterAccountCommand(aggregateID, email, name string) *registerAccount
 
 func NewAddFundsCommand(aggregateID string, amount int64, currencyCode string) *addFunds {
 	return &addFunds{
-		CommandBase:  common.NewCommandBase(aggregateID),
+		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
 		Amount:       amount,
 		CurrencyCode: currencyCode,
 	}
@@ -57,7 +57,7 @@ func NewAddFundsCommand(aggregateID string, amount int64, currencyCode string) *
 
 func NewDeductFundsCommand(aggregateID string, amount int64, currencyCode string) *deductFunds {
 	return &deductFunds{
-		CommandBase:  common.NewCommandBase(aggregateID),
+		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
 		Amount:       amount,
 		CurrencyCode: currencyCode,
 	}

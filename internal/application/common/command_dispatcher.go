@@ -14,10 +14,6 @@ type CommandBase struct {
 	AggregateID string
 }
 
-func NewCommandBase(aggregateID string) *CommandBase {
-	return &CommandBase{AggregateID: aggregateID}
-}
-
 func (c *CommandBase) GetAggregateID() string {
 	return c.AggregateID
 }

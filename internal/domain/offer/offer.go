@@ -53,7 +53,7 @@ func (o *offer) PlaceBet(bet *bet) error {
 }
 
 func (o *offer) onOfferCreated(event *offerCreated) {
-	o.ID = event.GetAggregateID()
+	o.AggregateBase = &common.AggregateBase{ID: event.GetAggregateID()}
 	o.OffererID = event.OffererID
 	o.GameID = event.GameID
 	o.Favorite = event.Favorite
@@ -61,10 +61,11 @@ func (o *offer) onOfferCreated(event *offerCreated) {
 }
 
 func (o *offer) onBetPlaced(event *betPlaced) error {
-	if err := o.Limit.Deduct(event.Bet.Stake); err != nil {
+	newLimit, err := o.Limit.Deduct(event.Bet.Stake)
+	if err != nil {
 		return err
 	}
-
+	o.Limit = newLimit
 	o.Bets = append(o.Bets, event.Bet)
 	return nil
 }

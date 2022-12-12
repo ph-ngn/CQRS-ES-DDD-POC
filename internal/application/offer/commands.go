@@ -34,7 +34,7 @@ type placeBetHandler struct {
 
 func NewCreateOfferCommand(aggregateID, offererID, gameID, favorite string, limit int64, currencyCode string) *createOffer {
 	return &createOffer{
-		CommandBase:  common.NewCommandBase(aggregateID),
+		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
 		OffererID:    offererID,
 		GameID:       gameID,
 		Favorite:     favorite,
@@ -52,7 +52,7 @@ func NewCreateOfferHandler(repo Repository, eventBus common.EventBus) *createOff
 
 func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode string) *placeBet {
 	return &placeBet{
-		CommandBase:  common.NewCommandBase(aggregateID),
+		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
 		BettorID:     bettorID,
 		Stake:        stake,
 		CurrencyCode: currencyCode,
