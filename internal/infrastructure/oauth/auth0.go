@@ -1,4 +1,4 @@
-package infrastructure
+package oauth
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/andyj29/wannabet/internal/infrastructure/logger"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
 	"github.com/auth0/go-jwt-middleware/v2/jwks"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
@@ -14,7 +15,7 @@ import (
 func ValidateToken() func(next http.Handler) http.Handler {
 	issuerURL, err := url.Parse("https://" + os.Getenv("AUTH0_DOMAIN") + "/")
 	if err != nil {
-		infraLogger.Fatalf("Failed to parse the issuer url: %v", err)
+		logger.InfraLogger.Fatalf("Failed to parse the issuer url: %v", err)
 	}
 
 	provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
@@ -25,11 +26,11 @@ func ValidateToken() func(next http.Handler) http.Handler {
 		[]string{os.Getenv("AUTH0_AUDIENCE")},
 		validator.WithAllowedClockSkew(time.Minute))
 	if err != nil {
-		infraLogger.Fatalf("Failed to set up the jwt validator")
+		logger.InfraLogger.Fatalf("Failed to set up the jwt validator")
 	}
 
 	errorHandler := func(w http.ResponseWriter, r *http.Request, err error) {
-		infraLogger.Infof("Encountered error while validating JWT: %v", err)
+		logger.InfraLogger.Infof("Encountered error while validating JWT: %v", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)

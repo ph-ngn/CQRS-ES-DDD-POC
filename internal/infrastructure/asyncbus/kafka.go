@@ -1,4 +1,4 @@
-package infrastructure
+package asyncbus
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/andyj29/wannabet/internal/domain/common"
+	"github.com/andyj29/wannabet/internal/infrastructure/logger"
 	kafka "github.com/segmentio/kafka-go"
 )
 
@@ -14,8 +15,8 @@ func NewProducer(address, topic string) *kafka.Writer {
 	return &kafka.Writer{
 		Addr:        kafka.TCP(address),
 		Topic:       topic,
-		Logger:      kafka.LoggerFunc(infraLogger.Infof),
-		ErrorLogger: kafka.LoggerFunc(infraLogger.Errorf),
+		Logger:      kafka.LoggerFunc(logger.InfraLogger.Infof),
+		ErrorLogger: kafka.LoggerFunc(logger.InfraLogger.Errorf),
 		Balancer:    &kafka.Hash{},
 	}
 }
@@ -25,8 +26,8 @@ func NewConsumer(addresses []string, topic, groupID string) *kafka.Reader {
 		Brokers:     addresses,
 		Topic:       topic,
 		GroupID:     groupID,
-		Logger:      kafka.LoggerFunc(infraLogger.Infof),
-		ErrorLogger: kafka.LoggerFunc(infraLogger.Errorf),
+		Logger:      kafka.LoggerFunc(logger.InfraLogger.Infof),
+		ErrorLogger: kafka.LoggerFunc(logger.InfraLogger.Errorf),
 	})
 }
 
@@ -57,21 +58,13 @@ func (b *eventBus) Publish(event common.Event) {
 	}
 }
 
-type topicConfig struct {
+type TopicConfig struct {
 	topic         string
 	numPartitions int
 	repFactor     int
 }
 
-func NewTopicConfig(topic string, numPartitions, repFactor int) *topicConfig {
-	return &topicConfig{
-		topic:         topic,
-		numPartitions: numPartitions,
-		repFactor:     repFactor,
-	}
-}
-
-func CreateTopics(protocol, address string, topicConfigs ...topicConfig) error {
+func CreateTopics(protocol, address string, topicConfigs ...TopicConfig) error {
 	conn, err := kafka.Dial(protocol, address)
 	if err != nil {
 		return err

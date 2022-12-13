@@ -1,11 +1,11 @@
-package infrastructure
+package logger
 
 import (
 	"github.com/andyj29/wannabet/internal/application/common"
 	"go.uber.org/zap"
 )
 
-var infraLogger = NewZapLogger()
+var InfraLogger = NewZapLogger()
 
 type zapLogger struct {
 	logger *zap.SugaredLogger

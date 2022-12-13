@@ -13,30 +13,29 @@ func TestAddFunds(t *testing.T) {
 	testCases := map[string]struct {
 		inititalBalance, amountToBeAdded  int64
 		initialCurrencyCode, currencyCode string
-		errExpected                       bool
-		expectedErr                       error
+		expectedErr                       bool
+		err                               error
 	}{
-		"Valid - Add 100 CAD": {
+		"Valid - Add 100 CAD to 10 CAD": {
 			inititalBalance:     10,
 			initialCurrencyCode: "CAD",
 			amountToBeAdded:     100,
 			currencyCode:        "CAD",
-			errExpected:         false,
 		},
 		"Invalid / Can't add 0 - Add 0 CAD": {
 			inititalBalance:     100,
 			initialCurrencyCode: "CAD",
 			currencyCode:        "CAD",
-			errExpected:         true,
-			expectedErr:         common.FundsNotAddable,
+			expectedErr:         true,
+			err:                 common.FundsNotAddable,
 		},
-		"Invalid / Incompatible currency - Add 100 VND": {
+		"Invalid / Incompatible currency - Add 100 VND to 50 VND": {
 			inititalBalance:     50,
 			initialCurrencyCode: "CAD",
 			amountToBeAdded:     100,
 			currencyCode:        "VND",
-			errExpected:         true,
-			expectedErr:         common.FundsNotAddable,
+			expectedErr:         true,
+			err:                 common.FundsNotAddable,
 		},
 	}
 
@@ -54,16 +53,13 @@ func TestAddFunds(t *testing.T) {
 			amountToBeAdded := common.NewMoney(testCase.amountToBeAdded, testCase.currencyCode)
 			err := instance.AddFunds(amountToBeAdded)
 
-			if testCase.errExpected {
-				assert.Equal(t, testCase.expectedErr, err)
+			if testCase.expectedErr {
+				assert.Equal(t, testCase.err, err)
 				assert.True(t, instance.Balance.IsEqual(initialBalance))
 				return
 			}
 
-			expectedBalance, err := initialBalance.Add(amountToBeAdded)
-			if err != nil {
-				t.Errorf("Failed to compute expected balance after success add")
-			}
+			expectedBalance, _ := initialBalance.Add(amountToBeAdded)
 			assert.Nilf(t, err, "err should be nil")
 			assert.True(t, instance.Balance.IsEqual(expectedBalance))
 		})
@@ -76,32 +72,30 @@ func TestDeductFunds(t *testing.T) {
 	testCases := map[string]struct {
 		initialBalance, amountToBeDeducted int64
 		initialCurrencyCode, currencyCode  string
-		errExpected                        bool
-		expectedErr                        error
+		expectedErr                        bool
+		err                                error
 	}{
 		"Valid - Deduct 50 CAD from 100 CAD": {
 			initialBalance:      100,
 			initialCurrencyCode: "CAD",
 			amountToBeDeducted:  50,
 			currencyCode:        "CAD",
-			errExpected:         false,
-			expectedErr:         common.FundsNotDeductible,
 		},
-		"Invalid / Insufficient funds - Deduct 100 CAD": {
+		"Invalid / Insufficient funds - Deduct 100 CAD from 50 CAD": {
 			initialBalance:      50,
 			initialCurrencyCode: "CAD",
 			amountToBeDeducted:  150,
 			currencyCode:        "CAD",
-			errExpected:         true,
-			expectedErr:         common.FundsNotDeductible,
+			expectedErr:         true,
+			err:                 common.FundsNotDeductible,
 		},
-		"Invalid / Incompatible currency - Deduct 1 VND": {
+		"Invalid / Incompatible currency - Deduct 1 VND from 100 CAD": {
 			initialBalance:      100,
 			initialCurrencyCode: "CAD",
 			amountToBeDeducted:  1,
 			currencyCode:        "VND",
-			errExpected:         true,
-			expectedErr:         common.FundsNotDeductible,
+			expectedErr:         true,
+			err:                 common.FundsNotDeductible,
 		},
 	}
 
@@ -119,16 +113,13 @@ func TestDeductFunds(t *testing.T) {
 			amountToBeDeducted := common.NewMoney(testCase.amountToBeDeducted, testCase.currencyCode)
 			err := instance.DeductFunds(amountToBeDeducted)
 
-			if testCase.errExpected {
-				assert.Equal(t, testCase.expectedErr, err)
+			if testCase.expectedErr {
+				assert.Equal(t, testCase.err, err)
 				assert.True(t, instance.Balance.IsEqual(initialBalance))
 				return
 			}
 
-			expectedBalance, err := initialBalance.Deduct(amountToBeDeducted)
-			if err != nil {
-				t.Errorf("Failed to compute expected balance after success deduct")
-			}
+			expectedBalance, _ := initialBalance.Deduct(amountToBeDeducted)
 			assert.Nilf(t, err, "err should be nil")
 			assert.True(t, instance.Balance.IsEqual(expectedBalance))
 
