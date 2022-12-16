@@ -21,10 +21,10 @@ func (c *Controller) RegisterAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := account.NewRegisterAccountCommand(request.ID, request.Email, request.Name)
-	if err := c.Dispatcher.Dispatch(cmd); err != nil {
+	if err := c.Dispatch(cmd); err != nil {
 		common.WriteJSONErrorResponse(w, r, common.NewInternalError(err))
 		return
 	}
 
-	common.WriteJSONResponse(w, r, NewRegisterAccountResponse(true, "Account is succesfully registered"))
+	common.WriteJSONResponseWithStatus(w, r, http.StatusCreated, newRegisterAccountResponse(true, "Account is succesfully registered"))
 }

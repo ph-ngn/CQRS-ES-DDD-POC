@@ -44,19 +44,16 @@ func NewAccount(id string, email Email, name string) *account {
 	accountCreatedEvent := NewAccountCreatedEvent(id, email, name)
 	newAccount := &account{}
 	newAccount.When(accountCreatedEvent, true)
-
 	return newAccount
 }
 
 func (a *account) AddFunds(funds common.Money) error {
 	fundsAddedEvent := NewFundsAddedEvent(a.GetID(), funds)
-
 	return a.When(fundsAddedEvent, true)
 }
 
 func (a *account) DeductFunds(amount common.Money) error {
 	fundsDeductedEvent := NewFundsDeductedEvent(a.GetID(), amount)
-
 	return a.When(fundsDeductedEvent, true)
 }
 
@@ -72,6 +69,7 @@ func (a *account) onFundsAdded(event *fundsAdded) error {
 	if err != nil {
 		return err
 	}
+
 	a.Balance = newBalance
 	return nil
 }
@@ -81,6 +79,7 @@ func (a *account) onFundsDeducted(event *fundsDeducted) error {
 	if err != nil {
 		return err
 	}
+
 	a.Balance = newBalance
 	return nil
 }

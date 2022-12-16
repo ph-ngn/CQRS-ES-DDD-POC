@@ -75,7 +75,6 @@ func CreateTopics(protocol, address string, topicConfigs ...TopicConfig) error {
 	if err != nil {
 		return err
 	}
-
 	controllerConn, err := kafka.Dial(protocol, net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
 	if err != nil {
 		return err

@@ -11,6 +11,7 @@ func WriteJSONResponseWithStatus(w http.ResponseWriter, r *http.Request, status 
 		w.WriteHeader(http.StatusInternalServerError)
 		return err
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(body)

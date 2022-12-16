@@ -58,6 +58,7 @@ func (d *InMemoryDispatcher) RegisterHandler(cmd Command, handler CommandHandler
 	if _, ok := d.handlers[cmd.GetCommandType()]; ok {
 		return DuplicateCommandHandler
 	}
+
 	d.handlers[cmd.GetCommandType()] = handler
 	return nil
 }

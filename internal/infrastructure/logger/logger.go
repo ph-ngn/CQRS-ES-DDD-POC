@@ -3,16 +3,45 @@ package logger
 import (
 	"github.com/andyj29/wannabet/internal/application/common"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"os"
 )
 
-var InfraLogger = NewZapLogger()
+var (
+	InfraLoggerConfig = Config{
+		Layer:       "Infra",
+		LogFileName: "infra.log",
+	}
+	InfraLogger = NewZapLogger(InfraLoggerConfig)
+)
 
 type zapLogger struct {
 	logger *zap.SugaredLogger
 }
 
-func NewZapLogger() common.Logger {
-	logger, _ := zap.NewProduction()
+type Config struct {
+	Layer, LogFileName string
+}
+
+func NewZapLogger(cfg Config) common.Logger {
+	config := zap.NewProductionEncoderConfig()
+	config.TimeKey = "@timestamp"
+	config.MessageKey = "message"
+	config.LevelKey = "log.level"
+	config.EncodeTime = zapcore.ISO8601TimeEncoder
+	fileEncoder := zapcore.NewJSONEncoder(config)
+	consoleEncoder := zapcore.NewConsoleEncoder(config)
+	logFile, _ := os.OpenFile(cfg.LogFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	writer := zapcore.AddSync(logFile)
+	defaultLogLevel := zapcore.DebugLevel
+	logFields := zap.Fields(
+		zap.String("log.layer", cfg.Layer),
+	)
+	core := zapcore.NewTee(
+		zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
+	)
+	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel), logFields)
 	return &zapLogger{
 		logger: logger.Sugar(),
 	}

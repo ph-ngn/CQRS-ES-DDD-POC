@@ -29,7 +29,7 @@ func TestAddFunds(t *testing.T) {
 			expectedErr:         true,
 			err:                 common.FundsNotAddable,
 		},
-		"Invalid / Incompatible currency - Add 100 VND to 50 VND": {
+		"Invalid / Incompatible currency - Add 100 VND to 50 CAD": {
 			inititalBalance:     50,
 			initialCurrencyCode: "CAD",
 			amountToBeAdded:     100,

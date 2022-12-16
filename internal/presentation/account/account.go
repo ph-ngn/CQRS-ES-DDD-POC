@@ -11,7 +11,7 @@ type registerAccountResponse struct {
 	Message string `json:"message"`
 }
 
-func NewRegisterAccountResponse(success bool, message string) *registerAccountResponse {
+func newRegisterAccountResponse(success bool, message string) *registerAccountResponse {
 	return &registerAccountResponse{
 		Success: success,
 		Message: message,

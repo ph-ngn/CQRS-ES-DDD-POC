@@ -33,22 +33,18 @@ func (o *offer) When(event common.Event, isNew bool) (err error) {
 	if isNew && err == nil {
 		o.TrackChange(event)
 	}
-
 	return err
 }
 
 func NewOffer(id, offererID, gameID, favorite string, limit common.Money) Offer {
 	offerCreatedEvent := NewOfferCreatedEvent(id, offererID, gameID, favorite, limit)
-
 	newOffer := &offer{}
 	newOffer.When(offerCreatedEvent, true)
-
 	return newOffer
 }
 
 func (o *offer) PlaceBet(bet *bet) error {
 	betPlacedEvent := NewBetPlacedEvent(o.GetID(), bet)
-
 	return o.When(betPlacedEvent, true)
 }
 
@@ -65,6 +61,7 @@ func (o *offer) onBetPlaced(event *betPlaced) error {
 	if err != nil {
 		return err
 	}
+
 	o.Limit = newLimit
 	o.Bets = append(o.Bets, event.Bet)
 	return nil

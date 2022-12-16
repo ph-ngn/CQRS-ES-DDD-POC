@@ -15,7 +15,7 @@ type createOffer struct {
 	CurrencyCode string
 }
 
-type createOfferHandler struct {
+type CreateOfferHandler struct {
 	repo     Repository
 	eventBus common.EventBus
 }
@@ -27,7 +27,7 @@ type placeBet struct {
 	CurrencyCode string
 }
 
-type placeBetHandler struct {
+type PlaceBetHandler struct {
 	repo     Repository
 	eventBus common.EventBus
 }
@@ -43,13 +43,6 @@ func NewCreateOfferCommand(aggregateID, offererID, gameID, favorite string, limi
 	}
 }
 
-func NewCreateOfferHandler(repo Repository, eventBus common.EventBus) *createOfferHandler {
-	return &createOfferHandler{
-		repo:     repo,
-		eventBus: eventBus,
-	}
-}
-
 func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode string) *placeBet {
 	return &placeBet{
 		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
@@ -59,14 +52,7 @@ func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode 
 	}
 }
 
-func NewPlaceBetHandler(repo Repository, eventBus common.EventBus) *placeBetHandler {
-	return &placeBetHandler{
-		repo:     repo,
-		eventBus: eventBus,
-	}
-}
-
-func (h *createOfferHandler) Handle(cmd createOffer) error {
+func (h *CreateOfferHandler) Handle(cmd createOffer) error {
 	newOffer := offer.NewOffer(cmd.GetAggregateID(),
 		cmd.OffererID,
 		cmd.GameID,
@@ -79,14 +65,12 @@ func (h *createOfferHandler) Handle(cmd createOffer) error {
 	for _, event := range newOffer.GetChanges() {
 		h.eventBus.Publish(event)
 	}
-
 	return nil
 }
 
-func (h *placeBetHandler) Handle(cmd placeBet) error {
+func (h *PlaceBetHandler) Handle(cmd placeBet) error {
 	loadedOffer := h.repo.Load(cmd.GetAggregateID())
 	newBet := offer.NewBet(cmd.BettorID, domainCommon.NewMoney(cmd.Stake, cmd.CurrencyCode))
-
 	if err := loadedOffer.PlaceBet(newBet); err != nil {
 		return err
 	}
@@ -98,6 +82,5 @@ func (h *placeBetHandler) Handle(cmd placeBet) error {
 	for _, event := range loadedOffer.GetChanges() {
 		h.eventBus.Publish(event)
 	}
-
 	return nil
 }
