@@ -21,8 +21,11 @@ type Money struct {
 	Currency Currency
 }
 
-func NewMoney(amount int64, code string) Money {
-	return Money{Amount: amount, Currency: CurrencyFromCode(code)}
+func NewMoney(amount int64, code string) (Money, error) {
+	if amount < 0 || code == "" {
+		return Money{}, InvalidAmount
+	}
+	return Money{Amount: amount, Currency: CurrencyFromCode(code)}, nil
 }
 
 func (f Money) isCompatible(other Money) bool {

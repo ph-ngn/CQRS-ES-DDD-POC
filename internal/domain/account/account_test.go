@@ -44,13 +44,13 @@ func TestAddFunds(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			instance := NewAccount("testID", Email("testEmail"), "testName")
-			initialBalance := common.NewMoney(testCase.inititalBalance, testCase.initialCurrencyCode)
+			instance, _ := NewAccount("testID", Email("testEmail"), "testName")
+			initialBalance, _ := common.NewMoney(testCase.inititalBalance, testCase.initialCurrencyCode)
 			if err := instance.AddFunds(initialBalance); err != nil {
 				t.Errorf("Failed to initialize account with a balance of %v", initialBalance)
 			}
 
-			amountToBeAdded := common.NewMoney(testCase.amountToBeAdded, testCase.currencyCode)
+			amountToBeAdded, _ := common.NewMoney(testCase.amountToBeAdded, testCase.currencyCode)
 			err := instance.AddFunds(amountToBeAdded)
 
 			if testCase.expectedErr {
@@ -104,13 +104,13 @@ func TestDeductFunds(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			instance := NewAccount("testID", Email("testEmail"), "testName")
-			initialBalance := common.NewMoney(testCase.initialBalance, testCase.initialCurrencyCode)
+			instance, _ := NewAccount("testID", Email("testEmail"), "testName")
+			initialBalance, _ := common.NewMoney(testCase.initialBalance, testCase.initialCurrencyCode)
 			if err := instance.AddFunds(initialBalance); err != nil {
 				t.Errorf("Failed to initialize account with a balance of %v", initialBalance)
 			}
 
-			amountToBeDeducted := common.NewMoney(testCase.amountToBeDeducted, testCase.currencyCode)
+			amountToBeDeducted, _ := common.NewMoney(testCase.amountToBeDeducted, testCase.currencyCode)
 			err := instance.DeductFunds(amountToBeDeducted)
 
 			if testCase.expectedErr {

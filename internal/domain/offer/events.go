@@ -4,10 +4,8 @@ import "github.com/andyj29/wannabet/internal/domain/common"
 
 type offerCreated struct {
 	*common.EventBase
-	OffererID string
-	GameID    string
-	Favorite  string
-	Limit     common.Money
+	BookMakerID, FixtureID, HomeOdds, AwayOdds string
+	Limit                                      common.Money
 }
 
 type betPlaced struct {
@@ -15,13 +13,14 @@ type betPlaced struct {
 	Bet *bet
 }
 
-func NewOfferCreatedEvent(aggregateID, offererID, gameID, favorite string, limit common.Money) *offerCreated {
+func NewOfferCreatedEvent(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdds string, limit common.Money) *offerCreated {
 	return &offerCreated{
-		EventBase: &common.EventBase{AggregateID: aggregateID},
-		OffererID: offererID,
-		GameID:    gameID,
-		Favorite:  favorite,
-		Limit:     limit,
+		EventBase:   &common.EventBase{AggregateID: aggregateID},
+		BookMakerID: bookMakerID,
+		FixtureID:   fixtureID,
+		HomeOdds:    homeOdds,
+		AwayOdds:    awayOdds,
+		Limit:       limit,
 	}
 }
 

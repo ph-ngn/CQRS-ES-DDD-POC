@@ -46,6 +46,6 @@ func ValidateToken() func(next http.Handler) http.Handler {
 	}
 }
 
-func ParseClaimsForSub(r *http.Request) string {
+func ParseSub(r *http.Request) string {
 	return r.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims).RegisteredClaims.Subject
 }

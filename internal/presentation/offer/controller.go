@@ -23,9 +23,10 @@ func (c *Controller) CreateOffer(w http.ResponseWriter, r *http.Request) {
 
 	requestingAccount := c.getRequestingAccount(r)
 	cmd := offer.NewCreateOfferCommand(requestingAccount,
-		request.OffererID,
-		request.GameID,
-		request.Favorite,
+		request.BookMakerID,
+		request.FixtureID,
+		request.HomeOdds,
+		request.AwayOdds,
 		request.Limit,
 		request.CurrencyCode)
 	if err := c.Dispatch(cmd); err != nil {
@@ -35,8 +36,9 @@ func (c *Controller) CreateOffer(w http.ResponseWriter, r *http.Request) {
 
 	common.WriteJSONResponseWithStatus(w, r, http.StatusCreated, newCreateOfferResponse(true,
 		"Offer is succesfully created",
-		request.GameID,
-		request.Favorite,
+		request.FixtureID,
+		request.HomeOdds,
+		request.AwayOdds,
 		request.Limit,
 		request.CurrencyCode))
 }
@@ -56,5 +58,5 @@ func (c *Controller) PlaceBet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	common.WriteJSONResponseWithStatus(w, r, http.StatusCreated,
-		newPlaceBetResponse(true, "Bet is succesfully placed", request.OfferID, request.Stake, request.CurrencyCode))
+		newPlaceBetResponse(true, "Bet is successfully placed", request.OfferID, request.Stake, request.CurrencyCode))
 }

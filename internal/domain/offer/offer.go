@@ -14,11 +14,9 @@ type Offer interface {
 
 type offer struct {
 	*common.AggregateBase
-	OffererID string
-	GameID    string
-	Favorite  string
-	Limit     common.Money
-	Bets      []*bet
+	BookMakerID, FixtureID, HomeOdds, AwayOdds string
+	Limit                                      common.Money
+	Bets                                       []*bet
 }
 
 func (o *offer) When(event common.Event, isNew bool) (err error) {
@@ -36,8 +34,8 @@ func (o *offer) When(event common.Event, isNew bool) (err error) {
 	return err
 }
 
-func NewOffer(id, offererID, gameID, favorite string, limit common.Money) Offer {
-	offerCreatedEvent := NewOfferCreatedEvent(id, offererID, gameID, favorite, limit)
+func NewOffer(id, bookMakerID, fixtureID, homeOdds, awayOdds string, limit common.Money) Offer {
+	offerCreatedEvent := NewOfferCreatedEvent(id, bookMakerID, fixtureID, homeOdds, awayOdds, limit)
 	newOffer := &offer{}
 	newOffer.When(offerCreatedEvent, true)
 	return newOffer
@@ -50,9 +48,10 @@ func (o *offer) PlaceBet(bet *bet) error {
 
 func (o *offer) onOfferCreated(event *offerCreated) {
 	o.AggregateBase = &common.AggregateBase{ID: event.GetAggregateID()}
-	o.OffererID = event.OffererID
-	o.GameID = event.GameID
-	o.Favorite = event.Favorite
+	o.BookMakerID = event.BookMakerID
+	o.FixtureID = event.FixtureID
+	o.HomeOdds = event.HomeOdds
+	o.AwayOdds = event.AwayOdds
 	o.Limit = event.Limit
 }
 

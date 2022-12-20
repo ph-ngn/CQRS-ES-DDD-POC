@@ -8,11 +8,9 @@ import (
 
 type createOffer struct {
 	*common.CommandBase
-	OffererID    string
-	GameID       string
-	Favorite     string
-	Limit        int64
-	CurrencyCode string
+	BookMakerID, FixtureID, HomeOdds, AwayOdds string
+	Limit                                      int64
+	CurrencyCode                               string
 }
 
 type CreateOfferHandler struct {
@@ -32,12 +30,13 @@ type PlaceBetHandler struct {
 	eventBus common.EventBus
 }
 
-func NewCreateOfferCommand(aggregateID, offererID, gameID, favorite string, limit int64, currencyCode string) *createOffer {
+func NewCreateOfferCommand(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdds string, limit int64, currencyCode string) *createOffer {
 	return &createOffer{
 		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
-		OffererID:    offererID,
-		GameID:       gameID,
-		Favorite:     favorite,
+		BookMakerID:  bookMakerID,
+		FixtureID:    fixtureID,
+		HomeOdds:     homeOdds,
+		AwayOdds:     awayOdds,
 		Limit:        limit,
 		CurrencyCode: currencyCode,
 	}
@@ -53,11 +52,16 @@ func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode 
 }
 
 func (h *CreateOfferHandler) Handle(cmd createOffer) error {
+	limit, err := domainCommon.NewMoney(cmd.Limit, cmd.CurrencyCode)
+	if err != nil {
+		return err
+	}
 	newOffer := offer.NewOffer(cmd.GetAggregateID(),
-		cmd.OffererID,
-		cmd.GameID,
-		cmd.Favorite,
-		domainCommon.NewMoney(cmd.Limit, cmd.CurrencyCode))
+		cmd.BookMakerID,
+		cmd.FixtureID,
+		cmd.HomeOdds,
+		cmd.AwayOdds,
+		limit)
 	if err := h.repo.Save(newOffer); err != nil {
 		return err
 	}
@@ -70,15 +74,17 @@ func (h *CreateOfferHandler) Handle(cmd createOffer) error {
 
 func (h *PlaceBetHandler) Handle(cmd placeBet) error {
 	loadedOffer := h.repo.Load(cmd.GetAggregateID())
-	newBet := offer.NewBet(cmd.BettorID, domainCommon.NewMoney(cmd.Stake, cmd.CurrencyCode))
+	stake, err := domainCommon.NewMoney(cmd.Stake, cmd.CurrencyCode)
+	if err != nil {
+		return err
+	}
+	newBet := offer.NewBet(cmd.BettorID, stake)
 	if err := loadedOffer.PlaceBet(newBet); err != nil {
 		return err
 	}
-
 	if err := h.repo.Save(loadedOffer); err != nil {
 		return err
 	}
-
 	for _, event := range loadedOffer.GetChanges() {
 		h.eventBus.Publish(event)
 	}

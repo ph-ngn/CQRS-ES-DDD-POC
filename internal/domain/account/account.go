@@ -25,7 +25,7 @@ type account struct {
 func (a *account) When(event common.Event, isNew bool) (err error) {
 	switch e := event.(type) {
 	case *accountCreated:
-		a.onAccountCreated(e)
+		err = a.onAccountCreated(e)
 
 	case *fundsAdded:
 		err = a.onFundsAdded(e)
@@ -40,11 +40,13 @@ func (a *account) When(event common.Event, isNew bool) (err error) {
 	return err
 }
 
-func NewAccount(id string, email Email, name string) *account {
+func NewAccount(id string, email Email, name string) (*account, error) {
 	accountCreatedEvent := NewAccountCreatedEvent(id, email, name)
 	newAccount := &account{}
-	newAccount.When(accountCreatedEvent, true)
-	return newAccount
+	if err := newAccount.When(accountCreatedEvent, true); err != nil {
+		return &account{}, err
+	}
+	return newAccount, nil
 }
 
 func (a *account) AddFunds(funds common.Money) error {
@@ -57,11 +59,17 @@ func (a *account) DeductFunds(amount common.Money) error {
 	return a.When(fundsDeductedEvent, true)
 }
 
-func (a *account) onAccountCreated(event *accountCreated) {
+func (a *account) onAccountCreated(event *accountCreated) error {
 	a.AggregateBase = &common.AggregateBase{ID: event.GetAggregateID()}
 	a.Email = event.Email
 	a.Name = event.Name
-	a.Balance = common.NewMoney(0, "CAD")
+	initialBalance, err := common.NewMoney(0, "CAD")
+	if err != nil {
+		return err
+	}
+	a.Balance = initialBalance
+	return nil
+
 }
 
 func (a *account) onFundsAdded(event *fundsAdded) error {

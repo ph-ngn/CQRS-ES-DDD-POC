@@ -1,9 +1,10 @@
 package offer
 
 type createOfferRequest struct {
-	OffererID    string `json:"offerer_id"`
-	GameID       string `json:"game_id"`
-	Favorite     string `json:"favorite"`
+	BookMakerID  string `json:"book_maker_id"`
+	FixtureID    string `json:"fixture_id"`
+	HomeOdds     string `json:"home_odds"`
+	AwayOdds     string `json:"away_odds"`
 	Limit        int64  `json:"limit"`
 	CurrencyCode string `json:"currency_code"`
 }
@@ -11,18 +12,20 @@ type createOfferRequest struct {
 type createOfferResponse struct {
 	Success      bool   `json:"success"`
 	Message      string `json:"message"`
-	GameID       string `json:"game_id"`
-	Favorite     string `json:"favorite"`
+	FixtureID    string `json:"fixture_id"`
+	HomeOdds     string `json:"home_odds"`
+	AwayOdds     string `json:"away_odds"`
 	Limit        int64  `json:"limit"`
 	CurrencyCode string `json:"currency_code"`
 }
 
-func newCreateOfferResponse(success bool, message, gameID, favorite string, limit int64, currencyCode string) *createOfferResponse {
+func newCreateOfferResponse(success bool, message, fixtureID, homeOdds, awayOdds string, limit int64, currencyCode string) *createOfferResponse {
 	return &createOfferResponse{
 		Success:      success,
 		Message:      message,
-		GameID:       gameID,
-		Favorite:     favorite,
+		FixtureID:    fixtureID,
+		HomeOdds:     homeOdds,
+		AwayOdds:     awayOdds,
 		Limit:        limit,
 		CurrencyCode: currencyCode,
 	}
