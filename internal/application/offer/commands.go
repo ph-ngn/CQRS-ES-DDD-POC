@@ -20,6 +20,7 @@ type CreateOfferHandler struct {
 
 type placeBet struct {
 	*common.CommandBase
+	BetID        string
 	BettorID     string
 	Stake        int64
 	CurrencyCode string
@@ -78,7 +79,7 @@ func (h *PlaceBetHandler) Handle(cmd placeBet) error {
 	if err != nil {
 		return err
 	}
-	newBet := offer.NewBet(cmd.BettorID, stake)
+	newBet := offer.NewBet(cmd.BetID, cmd.BettorID, stake)
 	if err := loadedOffer.PlaceBet(newBet); err != nil {
 		return err
 	}
