@@ -20,7 +20,7 @@ type zapLogger struct {
 }
 
 type Config struct {
-	Layer, LogFileName string
+	ServiceName, ServiceHost, Layer, LogFileName string
 }
 
 func NewZapLogger(cfg Config) common.Logger {
@@ -35,6 +35,8 @@ func NewZapLogger(cfg Config) common.Logger {
 	writer := zapcore.AddSync(logFile)
 	defaultLogLevel := zapcore.DebugLevel
 	logFields := zap.Fields(
+		zap.String("service.name", cfg.ServiceName),
+		zap.String("service.host", cfg.ServiceHost),
 		zap.String("log.layer", cfg.Layer),
 	)
 	core := zapcore.NewTee(

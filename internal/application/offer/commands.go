@@ -14,7 +14,7 @@ type createOffer struct {
 }
 
 type CreateOfferHandler struct {
-	repo     Repository
+	repo     common.Repository[*offer.Offer]
 	eventBus common.EventBus
 }
 
@@ -27,7 +27,7 @@ type placeBet struct {
 }
 
 type PlaceBetHandler struct {
-	repo     Repository
+	repo     common.Repository[*offer.Offer]
 	eventBus common.EventBus
 }
 
@@ -57,16 +57,18 @@ func (h *CreateOfferHandler) Handle(cmd createOffer) error {
 	if err != nil {
 		return err
 	}
-	newOffer := offer.NewOffer(cmd.GetAggregateID(),
+	newOffer, err := offer.NewOffer(cmd.GetAggregateID(),
 		cmd.BookMakerID,
 		cmd.FixtureID,
 		cmd.HomeOdds,
 		cmd.AwayOdds,
 		limit)
+	if err != nil {
+		return err
+	}
 	if err := h.repo.Save(newOffer); err != nil {
 		return err
 	}
-
 	for _, event := range newOffer.GetChanges() {
 		h.eventBus.Publish(event)
 	}

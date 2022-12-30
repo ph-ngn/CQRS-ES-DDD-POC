@@ -24,7 +24,7 @@ type Config struct {
 	Router  *chi.Mux
 }
 
-func NewHTTPServer(cfg Config) *server {
+func NewHTTPServer(cfg Config) (*server, error) {
 	var server server
 	server.s.Addr = ":8080"
 	if cfg.Address != "" {
@@ -33,7 +33,11 @@ func NewHTTPServer(cfg Config) *server {
 	server.logger = cfg.Logger
 	server.router = cfg.Router
 	server.setupMiddleware()
-	return &server
+	return &server, nil
+}
+
+func (s *server) RegisterHandler(httpMethod, pattern string, handler http.HandlerFunc) {
+	s.router.Method(httpMethod, pattern, handler)
 }
 
 func (s *server) ListenandServe() error {

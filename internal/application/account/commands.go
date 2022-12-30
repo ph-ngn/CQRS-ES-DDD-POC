@@ -13,7 +13,7 @@ type registerAccount struct {
 }
 
 type RegisterAccountHandler struct {
-	repo     Repository
+	repo     common.Repository[*account.Account]
 	eventBus common.EventBus
 }
 
@@ -24,7 +24,7 @@ type addFunds struct {
 }
 
 type AddFundsHandler struct {
-	repo     Repository
+	repo     common.Repository[*account.Account]
 	eventBus common.EventBus
 }
 
@@ -35,7 +35,7 @@ type deductFunds struct {
 }
 
 type DeductFundsHandler struct {
-	repo     Repository
+	repo     common.Repository[*account.Account]
 	eventBus common.EventBus
 }
 

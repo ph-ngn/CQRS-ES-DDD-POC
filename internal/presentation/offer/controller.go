@@ -11,7 +11,7 @@ import (
 
 type Controller struct {
 	appCommon.Dispatcher
-	getRequestingAccount func(*http.Request) string
+	GetRequestingAccount func(*http.Request) string
 }
 
 func (c *Controller) CreateOffer(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +21,7 @@ func (c *Controller) CreateOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestingAccount := c.getRequestingAccount(r)
+	requestingAccount := c.GetRequestingAccount(r)
 	cmd := offer.NewCreateOfferCommand(requestingAccount,
 		request.BookMakerID,
 		request.FixtureID,
@@ -50,7 +50,7 @@ func (c *Controller) PlaceBet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestingAccount := c.getRequestingAccount(r)
+	requestingAccount := c.GetRequestingAccount(r)
 	cmd := offer.NewPlaceBetCommand(request.OfferID, requestingAccount, request.Stake, request.CurrencyCode)
 	if err := c.Dispatch(cmd); err != nil {
 		common.WriteJSONErrorResponse(w, r, common.NewInternalError(err))

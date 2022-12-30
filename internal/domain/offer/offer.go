@@ -4,22 +4,16 @@ import (
 	"github.com/andyj29/wannabet/internal/domain/common"
 )
 
-var _ common.AggregateRoot = (*offer)(nil)
-var _ Offer = (*offer)(nil)
+var _ common.AggregateRoot = (*Offer)(nil)
 
-type Offer interface {
-	common.AggregateRoot
-	PlaceBet(*bet) error
-}
-
-type offer struct {
+type Offer struct {
 	*common.AggregateBase
 	BookMakerID, FixtureID, HomeOdds, AwayOdds string
 	Limit                                      common.Money
 	Bets                                       []*bet
 }
 
-func (o *offer) When(event common.Event, isNew bool) (err error) {
+func (o *Offer) When(event common.Event, isNew bool) (err error) {
 	switch e := event.(type) {
 	case *offerCreated:
 		o.onOfferCreated(e)
@@ -34,19 +28,21 @@ func (o *offer) When(event common.Event, isNew bool) (err error) {
 	return err
 }
 
-func NewOffer(id, bookMakerID, fixtureID, homeOdds, awayOdds string, limit common.Money) Offer {
+func NewOffer(id, bookMakerID, fixtureID, homeOdds, awayOdds string, limit common.Money) (*Offer, error) {
 	offerCreatedEvent := NewOfferCreatedEvent(id, bookMakerID, fixtureID, homeOdds, awayOdds, limit)
-	newOffer := &offer{}
-	newOffer.When(offerCreatedEvent, true)
-	return newOffer
+	newOffer := &Offer{}
+	if err := newOffer.When(offerCreatedEvent, true); err != nil {
+		return &Offer{}, err
+	}
+	return newOffer, nil
 }
 
-func (o *offer) PlaceBet(bet *bet) error {
+func (o *Offer) PlaceBet(bet *bet) error {
 	betPlacedEvent := NewBetPlacedEvent(o.GetID(), bet)
 	return o.When(betPlacedEvent, true)
 }
 
-func (o *offer) onOfferCreated(event *offerCreated) {
+func (o *Offer) onOfferCreated(event *offerCreated) {
 	o.AggregateBase = &common.AggregateBase{ID: event.GetAggregateID()}
 	o.BookMakerID = event.BookMakerID
 	o.FixtureID = event.FixtureID
@@ -55,7 +51,7 @@ func (o *offer) onOfferCreated(event *offerCreated) {
 	o.Limit = event.Limit
 }
 
-func (o *offer) onBetPlaced(event *betPlaced) error {
+func (o *Offer) onBetPlaced(event *betPlaced) error {
 	newLimit, err := o.Limit.Deduct(event.Bet.Stake)
 	if err != nil {
 		return err

@@ -1,10 +1,12 @@
 package datastore
 
 import (
+	"fmt"
 	"github.com/andyj29/wannabet/internal/domain/common"
 	"github.com/andyj29/wannabet/internal/infrastructure/logger"
 	"github.com/jetbasrawi/go.geteventstore"
 	"net/url"
+	"reflect"
 	"time"
 )
 
@@ -41,7 +43,7 @@ func (es *EventStore) ReadAll(stream string, callback func(common.Event, bool) e
 
 			case *goes.ErrNotFound:
 				logger.InfraLogger.Errorf("Could not find stream with this ID: %v")
-				return err
+				return fmt.Errorf("stream with this ID not found")
 
 			case *goes.ErrUnauthorized:
 				logger.InfraLogger.Fatalf("Read is not authorized for this stream: %v", err)
@@ -67,6 +69,43 @@ func (es *EventStore) ReadAll(stream string, callback func(common.Event, bool) e
 	return nil
 }
 
-type AccountRepository struct {
+type Repository[T common.AggregateRoot] struct {
 	es *EventStore
+}
+
+func NewRepository[T common.AggregateRoot](eventStore *EventStore) *Repository[T] {
+	return &Repository[T]{
+		es: eventStore,
+	}
+}
+
+func (r *Repository[T]) Load(aggregateID string) (T, error) {
+	var deserializedAggregate T
+	initNilAggregatePtr(&deserializedAggregate)
+	if err := r.es.ReadAll(aggregateID, deserializedAggregate.When); err != nil {
+		var nilAggregate T
+		return nilAggregate, err
+	}
+	return deserializedAggregate, nil
+}
+
+func (r *Repository[T]) Save(aggregate T) error {
+	changes := aggregate.GetChanges()
+	for _, change := range changes {
+		if err := r.es.Append(change, nil); err != nil {
+			logger.InfraLogger.Errorf(err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
+func initNilAggregatePtr(dp interface{}) {
+	target := reflect.ValueOf(dp).Elem()
+	if reflect.Indirect(target).IsValid() {
+		return
+	}
+
+	aggregateType := target.Type().Elem()
+	target.Set(reflect.New(aggregateType))
 }
