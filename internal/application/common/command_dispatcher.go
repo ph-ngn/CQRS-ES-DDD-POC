@@ -33,6 +33,7 @@ type Dispatcher interface {
 
 type InMemoryDispatcher struct {
 	handlers map[string]CommandHandler
+	mu       sync.RWMutex
 }
 
 func NewInMemoryDispatcher() *InMemoryDispatcher {
@@ -42,8 +43,8 @@ func NewInMemoryDispatcher() *InMemoryDispatcher {
 }
 
 func (d *InMemoryDispatcher) Dispatch(cmd Command) error {
-	cmdMu.RLock()
-	defer cmdMu.Unlock()
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 
 	if handler, ok := d.handlers[cmd.GetCommandType()]; ok {
 		return handler.Handle(cmd)
@@ -52,8 +53,8 @@ func (d *InMemoryDispatcher) Dispatch(cmd Command) error {
 }
 
 func (d *InMemoryDispatcher) RegisterHandler(cmd Command, handler CommandHandler) error {
-	cmdMu.Lock()
-	defer cmdMu.Unlock()
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
 	if _, ok := d.handlers[cmd.GetCommandType()]; ok {
 		return DuplicateCommandHandler
@@ -62,5 +63,3 @@ func (d *InMemoryDispatcher) RegisterHandler(cmd Command, handler CommandHandler
 	d.handlers[cmd.GetCommandType()] = handler
 	return nil
 }
-
-var cmdMu sync.RWMutex
