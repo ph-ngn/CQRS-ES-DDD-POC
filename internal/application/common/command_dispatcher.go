@@ -23,7 +23,7 @@ func (c *CommandBase) GetCommandType() string {
 }
 
 type CommandHandler interface {
-	Handle(Command) error
+	Handle(cmd Command) error
 }
 
 type Dispatcher interface {

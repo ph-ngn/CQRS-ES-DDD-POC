@@ -11,10 +11,9 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-func NewProducer(address, topic string) *kafka.Writer {
+func NewProducer(address string) *kafka.Writer {
 	return &kafka.Writer{
 		Addr:        kafka.TCP(address),
-		Topic:       topic,
 		Logger:      kafka.LoggerFunc(logger.InfraLogger.Infof),
 		ErrorLogger: kafka.LoggerFunc(logger.InfraLogger.Errorf),
 		Balancer:    &kafka.Hash{},
@@ -31,17 +30,17 @@ func NewConsumer(addresses []string, topic, groupID string) *kafka.Reader {
 	})
 }
 
-type eventBus struct {
+type EventBus struct {
 	producer *kafka.Writer
 }
 
-func NewAsyncEventBus(producer *kafka.Writer) *eventBus {
-	return &eventBus{
+func NewAsyncEventBus(producer *kafka.Writer) *EventBus {
+	return &EventBus{
 		producer: producer,
 	}
 }
 
-func (b *eventBus) Publish(event common.Event) {
+func (b *EventBus) Publish(event common.Event) {
 	payload, err := json.Marshal(event)
 	if err != nil {
 		return
@@ -49,6 +48,7 @@ func (b *eventBus) Publish(event common.Event) {
 
 	if err := b.producer.WriteMessages(context.Background(),
 		kafka.Message{
+			Topic: event.GetEventType(),
 			Key:   []byte(event.GetAggregateID()),
 			Value: payload,
 		},

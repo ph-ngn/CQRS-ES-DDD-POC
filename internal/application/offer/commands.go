@@ -6,7 +6,7 @@ import (
 	"github.com/andyj29/wannabet/internal/domain/offer"
 )
 
-type createOffer struct {
+type CreateOffer struct {
 	*common.CommandBase
 	BookMakerID, FixtureID, HomeOdds, AwayOdds string
 	Limit                                      int64
@@ -14,11 +14,11 @@ type createOffer struct {
 }
 
 type CreateOfferHandler struct {
-	repo     common.Repository[*offer.Offer]
-	eventBus common.EventBus
+	Repo     common.Repository[*offer.Offer]
+	EventBus common.EventBus
 }
 
-type placeBet struct {
+type PlaceBet struct {
 	*common.CommandBase
 	BetID        string
 	BettorID     string
@@ -27,12 +27,12 @@ type placeBet struct {
 }
 
 type PlaceBetHandler struct {
-	repo     common.Repository[*offer.Offer]
-	eventBus common.EventBus
+	Repo     common.Repository[*offer.Offer]
+	EventBus common.EventBus
 }
 
-func NewCreateOfferCommand(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdds string, limit int64, currencyCode string) *createOffer {
-	return &createOffer{
+func NewCreateOfferCommand(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdds string, limit int64, currencyCode string) *CreateOffer {
+	return &CreateOffer{
 		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
 		BookMakerID:  bookMakerID,
 		FixtureID:    fixtureID,
@@ -43,8 +43,8 @@ func NewCreateOfferCommand(aggregateID, bookMakerID, fixtureID, homeOdds, awayOd
 	}
 }
 
-func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode string) *placeBet {
-	return &placeBet{
+func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode string) *PlaceBet {
+	return &PlaceBet{
 		CommandBase:  &common.CommandBase{AggregateID: aggregateID},
 		BettorID:     bettorID,
 		Stake:        stake,
@@ -52,44 +52,55 @@ func NewPlaceBetCommand(aggregateID, bettorID string, stake int64, currencyCode 
 	}
 }
 
-func (h *CreateOfferHandler) Handle(cmd createOffer) error {
-	limit, err := domainCommon.NewMoney(cmd.Limit, cmd.CurrencyCode)
+func (h *CreateOfferHandler) Handle(cmd common.Command) error {
+	c, ok := cmd.(*CreateOffer)
+	if !ok {
+		return nil
+	}
+	limit, err := domainCommon.NewMoney(c.Limit, c.CurrencyCode)
 	if err != nil {
 		return err
 	}
 	newOffer, err := offer.NewOffer(cmd.GetAggregateID(),
-		cmd.BookMakerID,
-		cmd.FixtureID,
-		cmd.HomeOdds,
-		cmd.AwayOdds,
+		c.BookMakerID,
+		c.FixtureID,
+		c.HomeOdds,
+		c.AwayOdds,
 		limit)
 	if err != nil {
 		return err
 	}
-	if err := h.repo.Save(newOffer); err != nil {
+	if err := h.Repo.Save(newOffer); err != nil {
 		return err
 	}
 	for _, event := range newOffer.GetChanges() {
-		h.eventBus.Publish(event)
+		h.EventBus.Publish(event)
 	}
 	return nil
 }
 
-func (h *PlaceBetHandler) Handle(cmd placeBet) error {
-	loadedOffer := h.repo.Load(cmd.GetAggregateID())
-	stake, err := domainCommon.NewMoney(cmd.Stake, cmd.CurrencyCode)
+func (h *PlaceBetHandler) Handle(cmd common.Command) error {
+	c, ok := cmd.(*PlaceBet)
+	if !ok {
+		return nil
+	}
+	loadedOffer, err := h.Repo.Load(cmd.GetAggregateID())
 	if err != nil {
 		return err
 	}
-	newBet := offer.NewBet(cmd.BetID, cmd.BettorID, stake)
+	stake, err := domainCommon.NewMoney(c.Stake, c.CurrencyCode)
+	if err != nil {
+		return err
+	}
+	newBet := offer.NewBet(c.BetID, c.BettorID, stake)
 	if err := loadedOffer.PlaceBet(newBet); err != nil {
 		return err
 	}
-	if err := h.repo.Save(loadedOffer); err != nil {
+	if err := h.Repo.Save(loadedOffer); err != nil {
 		return err
 	}
 	for _, event := range loadedOffer.GetChanges() {
-		h.eventBus.Publish(event)
+		h.EventBus.Publish(event)
 	}
 	return nil
 }
