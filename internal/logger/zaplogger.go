@@ -7,14 +7,6 @@ import (
 	"os"
 )
 
-var (
-	InfraLoggerConfig = Config{
-		Layer:       "Infra",
-		LogFileName: "infra.log",
-	}
-	InfraLogger = NewZapLogger(InfraLoggerConfig)
-)
-
 type zapLogger struct {
 	logger *zap.SugaredLogger
 }

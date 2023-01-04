@@ -6,8 +6,8 @@ import (
 
 	"github.com/andyj29/wannabet/internal/api/httperror"
 	rw "github.com/andyj29/wannabet/internal/api/responsewriter"
-	"github.com/andyj29/wannabet/internal/application/account"
 	"github.com/andyj29/wannabet/internal/application/common"
+	"github.com/andyj29/wannabet/internal/command"
 )
 
 type AccountController struct {
@@ -21,13 +21,13 @@ func (c *AccountController) RegisterAccount(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	cmd := account.NewRegisterAccountCommand(request.ID, request.Email, request.Name)
+	cmd := command.NewRegisterAccountCommand(request.ID, request.Email, request.Name)
 	if err := c.Dispatch(cmd); err != nil {
 		rw.WriteJSONErrorResponse(w, r, httperror.NewInternalError(err))
 		return
 	}
 
-	rw.WriteJSONResponseWithStatus(w, r, http.StatusCreated, registerAccountResponse{Success: true, Message: "Account successfully registered"})
+	rw.WriteJSONResponseWithStatus(w, r, http.StatusCreated, newResponse(true, "Account successfully registered"))
 }
 
 type registerAccountRequest struct {
@@ -37,6 +37,5 @@ type registerAccountRequest struct {
 }
 
 type registerAccountResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	*response
 }

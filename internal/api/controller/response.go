@@ -1,12 +1,12 @@
 package controller
 
-type responseBase struct {
+type response struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
 
-func newResponseBase(success bool, message string) *responseBase {
-	return &responseBase{
+func newResponse(success bool, message string) *response {
+	return &response{
 		Success: success,
 		Message: message,
 	}

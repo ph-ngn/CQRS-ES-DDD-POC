@@ -1,4 +1,4 @@
-package httpserver
+package httprest
 
 import (
 	"context"

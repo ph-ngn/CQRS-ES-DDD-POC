@@ -1,4 +1,4 @@
-package asyncbus
+package eventbus
 
 import (
 	"context"

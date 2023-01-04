@@ -2,12 +2,12 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/andyj29/wannabet/internal/api/httperror"
-	rw "github.com/andyj29/wannabet/internal/api/responsewriter"
 	"net/http"
 
+	"github.com/andyj29/wannabet/internal/api/httperror"
+	rw "github.com/andyj29/wannabet/internal/api/responsewriter"
 	"github.com/andyj29/wannabet/internal/application/common"
-	"github.com/andyj29/wannabet/internal/application/offer"
+	"github.com/andyj29/wannabet/internal/command"
 )
 
 type OfferController struct {
@@ -23,7 +23,7 @@ func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestingAccount := c.GetRequestingAccount(r)
-	cmd := offer.NewCreateOfferCommand("testID",
+	cmd := command.NewCreateOfferCommand("testID",
 		requestingAccount,
 		request.FixtureID,
 		request.HomeOdds,
@@ -38,7 +38,7 @@ func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 	rw.WriteJSONResponseWithStatus(w, r,
 		http.StatusCreated,
 		createOfferResponse{
-			newResponseBase(true, "Offer successfully created"),
+			newResponse(true, "Offer successfully created"),
 			&request,
 		})
 }
@@ -51,7 +51,7 @@ func (c *OfferController) PlaceBet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestingAccount := c.GetRequestingAccount(r)
-	cmd := offer.NewPlaceBetCommand(request.OfferID, requestingAccount, request.Stake, request.CurrencyCode)
+	cmd := command.NewPlaceBetCommand(request.OfferID, requestingAccount, request.Stake, request.CurrencyCode)
 	if err := c.Dispatch(cmd); err != nil {
 		rw.WriteJSONErrorResponse(w, r, httperror.NewInternalError(err))
 		return
@@ -60,7 +60,7 @@ func (c *OfferController) PlaceBet(w http.ResponseWriter, r *http.Request) {
 	rw.WriteJSONResponseWithStatus(w, r,
 		http.StatusCreated,
 		placeBetResponse{
-			newResponseBase(true, "Bet successfully placed"),
+			newResponse(true, "Bet successfully placed"),
 			&request,
 		})
 }
@@ -74,7 +74,7 @@ type createOfferRequest struct {
 }
 
 type createOfferResponse struct {
-	*responseBase
+	*response
 	*createOfferRequest
 }
 
@@ -84,6 +84,6 @@ type placeBetRequest struct {
 	CurrencyCode string `json:"currency_code"`
 }
 type placeBetResponse struct {
-	*responseBase
+	*response
 	*placeBetRequest
 }
