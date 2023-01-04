@@ -1,13 +1,5 @@
 # sport-betting
 
-### Design:
-
-✔️  CQRS 
-
-✔️  Event Sourcing
-
-✔️  DDD
-
 ### Tech Stack:
 
 ✔️  Go

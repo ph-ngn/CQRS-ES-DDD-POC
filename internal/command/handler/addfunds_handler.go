@@ -2,19 +2,19 @@ package handler
 
 import (
 	"fmt"
-
-	"github.com/andyj29/wannabet/internal/application/common"
 	"github.com/andyj29/wannabet/internal/command"
+	"github.com/andyj29/wannabet/internal/domain"
 	"github.com/andyj29/wannabet/internal/domain/account"
-	dc "github.com/andyj29/wannabet/internal/domain/common"
+	"github.com/andyj29/wannabet/internal/eventbus"
+	"github.com/andyj29/wannabet/internal/repository"
 )
 
 type AddFundsHandler struct {
-	Repo     common.Repository[*account.Account]
-	EventBus common.EventBus
+	Repo     repository.Interface[*account.Account]
+	EventBus eventbus.Interface
 }
 
-func (h *AddFundsHandler) Handle(cmd common.Command) error {
+func (h *AddFundsHandler) Handle(cmd command.Interface) error {
 	c, ok := cmd.(*command.AddFunds)
 	if !ok {
 		panic(fmt.Sprintf("Unexpected command type %T", cmd))
@@ -25,7 +25,7 @@ func (h *AddFundsHandler) Handle(cmd common.Command) error {
 		return err
 	}
 
-	amount, err := dc.NewMoney(c.Amount, c.CurrencyCode)
+	amount, err := domain.NewMoney(c.Amount, c.CurrencyCode)
 	if err != nil {
 		return err
 	}

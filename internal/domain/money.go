@@ -1,4 +1,12 @@
-package common
+package domain
+
+import "errors"
+
+var (
+	ErrFundsNotAddable    = errors.New("funds can not be added because it might have incompatible currency or invalid amount")
+	ErrFundsNotDeductible = errors.New("funds can not be deducted because it might have incompatible currency or is insufficient")
+	ErrInvalidAmount      = errors.New(" amount can not be negative")
+)
 
 type Currency struct {
 	Name string
@@ -23,7 +31,7 @@ type Money struct {
 
 func NewMoney(amount int64, code string) (Money, error) {
 	if amount < 0 || code == "" {
-		return Money{}, InvalidAmount
+		return Money{}, NewInvalidOperationError(ErrInvalidAmount)
 	}
 	return Money{Amount: amount, Currency: CurrencyFromCode(code)}, nil
 }
@@ -45,7 +53,7 @@ func (f Money) Add(funds Money) (Money, error) {
 		f.Amount += funds.Amount
 		return f, nil
 	}
-	return Money{}, FundsNotAddable
+	return Money{}, NewInvalidOperationError(ErrFundsNotAddable)
 }
 
 func (f Money) Deduct(amount Money) (Money, error) {
@@ -53,7 +61,7 @@ func (f Money) Deduct(amount Money) (Money, error) {
 		f.Amount -= amount.Amount
 		return f, nil
 	}
-	return Money{}, FundsNotDeductible
+	return Money{}, NewInvalidOperationError(ErrFundsNotDeductible)
 }
 
 func (f Money) IsEqual(other Money) bool {

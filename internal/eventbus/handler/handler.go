@@ -1,7 +1,7 @@
 package handler
 
-import "github.com/andyj29/wannabet/internal/domain/common"
+import "github.com/andyj29/wannabet/internal/domain"
 
 type Interface interface {
-	Handle(common.Event)
+	Handle(domain.Event)
 }

@@ -1,4 +1,4 @@
-package logger
+package log
 
 type Logger interface {
 	Debugf(tmp string, args ...interface{})

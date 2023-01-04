@@ -2,16 +2,16 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/andyj29/wannabet/internal/command/dispatcher"
 	"net/http"
 
 	"github.com/andyj29/wannabet/internal/api/httperror"
 	rw "github.com/andyj29/wannabet/internal/api/responsewriter"
-	"github.com/andyj29/wannabet/internal/application/common"
 	"github.com/andyj29/wannabet/internal/command"
 )
 
 type OfferController struct {
-	common.Dispatcher
+	dispatcher.Interface
 	GetRequestingAccount func(*http.Request) string
 }
 

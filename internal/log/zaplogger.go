@@ -1,21 +1,33 @@
-package logger
+package log
 
 import (
-	"github.com/andyj29/wannabet/internal/application/common"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
 )
 
+var logger Logger = buildProductionLogger()
+
 type zapLogger struct {
 	logger *zap.SugaredLogger
 }
 
-type Config struct {
-	ServiceName, ServiceHost, Layer, LogFileName string
+func GetLogger() Logger {
+	return logger
+}
+func buildProductionLogger() Logger {
+	return NewZapLogger(Config{
+		ServiceName: os.Getenv("SERVICE_NAME"),
+		ServiceHost: os.Getenv("SERVICE_HOST"),
+		LogFileName: os.Getenv("PRODUCTION_LOG"),
+	})
 }
 
-func NewZapLogger(cfg Config) common.Logger {
+type Config struct {
+	ServiceName, ServiceHost, LogFileName string
+}
+
+func NewZapLogger(cfg Config) *zapLogger {
 	config := zap.NewProductionEncoderConfig()
 	config.TimeKey = "@timestamp"
 	config.MessageKey = "message"
@@ -29,7 +41,6 @@ func NewZapLogger(cfg Config) common.Logger {
 	logFields := zap.Fields(
 		zap.String("service.name", cfg.ServiceName),
 		zap.String("service.host", cfg.ServiceHost),
-		zap.String("log.layer", cfg.Layer),
 	)
 	core := zapcore.NewTee(
 		zapcore.NewCore(fileEncoder, writer, defaultLogLevel),

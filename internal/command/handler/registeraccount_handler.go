@@ -2,18 +2,18 @@ package handler
 
 import (
 	"fmt"
-
-	"github.com/andyj29/wannabet/internal/application/common"
 	"github.com/andyj29/wannabet/internal/command"
 	"github.com/andyj29/wannabet/internal/domain/account"
+	"github.com/andyj29/wannabet/internal/eventbus"
+	"github.com/andyj29/wannabet/internal/repository"
 )
 
 type RegisterAccountHandler struct {
-	Repo     common.Repository[*account.Account]
-	EventBus common.EventBus
+	Repo     repository.Interface[*account.Account]
+	EventBus eventbus.Interface
 }
 
-func (h *RegisterAccountHandler) Handle(cmd common.Command) error {
+func (h *RegisterAccountHandler) Handle(cmd command.Interface) error {
 	c, ok := cmd.(*command.RegisterAccount)
 	if !ok {
 		panic(fmt.Sprintf("Unexpected command type %T", cmd))

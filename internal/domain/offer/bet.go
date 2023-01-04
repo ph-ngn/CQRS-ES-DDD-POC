@@ -1,16 +1,18 @@
 package offer
 
-import "github.com/andyj29/wannabet/internal/domain/common"
+import (
+	"github.com/andyj29/wannabet/internal/domain"
+)
 
 type bet struct {
 	BetID    string
 	BettorID string
 	Home     bool
 	Away     bool
-	Stake    common.Money
+	Stake    domain.Money
 }
 
-func NewBet(betID, bettorID string, stake common.Money) *bet {
+func NewBet(betID, bettorID string, stake domain.Money) *bet {
 	return &bet{
 		BetID:    betID,
 		BettorID: bettorID,

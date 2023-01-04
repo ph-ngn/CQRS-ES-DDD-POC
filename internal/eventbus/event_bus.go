@@ -1,7 +1,7 @@
 package eventbus
 
-import "github.com/andyj29/wannabet/internal/domain/common"
+import "github.com/andyj29/wannabet/internal/domain"
 
 type Interface interface {
-	Publish(common.Event)
+	Publish(domain.Event)
 }

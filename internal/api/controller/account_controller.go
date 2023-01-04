@@ -6,12 +6,12 @@ import (
 
 	"github.com/andyj29/wannabet/internal/api/httperror"
 	rw "github.com/andyj29/wannabet/internal/api/responsewriter"
-	"github.com/andyj29/wannabet/internal/application/common"
 	"github.com/andyj29/wannabet/internal/command"
+	"github.com/andyj29/wannabet/internal/command/dispatcher"
 )
 
 type AccountController struct {
-	common.Dispatcher
+	dispatcher.Interface
 }
 
 func (c *AccountController) RegisterAccount(w http.ResponseWriter, r *http.Request) {

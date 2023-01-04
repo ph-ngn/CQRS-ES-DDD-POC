@@ -1,21 +1,21 @@
 package account
 
 import (
-	"github.com/andyj29/wannabet/internal/domain/common"
+	"github.com/andyj29/wannabet/internal/domain"
 )
 
-var _ common.AggregateRoot = (*Account)(nil)
+var _ domain.AggregateRoot = (*Account)(nil)
 
 type Email string
 
 type Account struct {
-	*common.AggregateBase
+	*domain.AggregateBase
 	Email   Email
 	Name    string
-	Balance common.Money
+	Balance domain.Money
 }
 
-func (a *Account) When(event common.Event, isNew bool) (err error) {
+func (a *Account) When(event domain.Event, isNew bool) (err error) {
 	switch e := event.(type) {
 	case *accountCreated:
 		err = a.onAccountCreated(e)
@@ -42,21 +42,21 @@ func NewAccount(id string, email Email, name string) (*Account, error) {
 	return newAccount, nil
 }
 
-func (a *Account) AddFunds(funds common.Money) error {
+func (a *Account) AddFunds(funds domain.Money) error {
 	fundsAddedEvent := NewFundsAddedEvent(a.GetID(), funds)
 	return a.When(fundsAddedEvent, true)
 }
 
-func (a *Account) DeductFunds(amount common.Money) error {
+func (a *Account) DeductFunds(amount domain.Money) error {
 	fundsDeductedEvent := NewFundsDeductedEvent(a.GetID(), amount)
 	return a.When(fundsDeductedEvent, true)
 }
 
 func (a *Account) onAccountCreated(event *accountCreated) error {
-	a.AggregateBase = &common.AggregateBase{ID: event.GetAggregateID()}
+	a.AggregateBase = &domain.AggregateBase{ID: event.GetAggregateID()}
 	a.Email = event.Email
 	a.Name = event.Name
-	initialBalance, err := common.NewMoney(0, "CAD")
+	initialBalance, err := domain.NewMoney(0, "CAD")
 	if err != nil {
 		return err
 	}

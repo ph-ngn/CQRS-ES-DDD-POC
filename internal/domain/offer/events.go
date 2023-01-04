@@ -1,21 +1,23 @@
 package offer
 
-import "github.com/andyj29/wannabet/internal/domain/common"
+import (
+	"github.com/andyj29/wannabet/internal/domain"
+)
 
 type offerCreated struct {
-	*common.EventBase
+	*domain.EventBase
 	BookMakerID, FixtureID, HomeOdds, AwayOdds string
-	Limit                                      common.Money
+	Limit                                      domain.Money
 }
 
 type betPlaced struct {
-	*common.EventBase
+	*domain.EventBase
 	Bet *bet
 }
 
-func NewOfferCreatedEvent(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdds string, limit common.Money) *offerCreated {
+func NewOfferCreatedEvent(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdds string, limit domain.Money) *offerCreated {
 	return &offerCreated{
-		EventBase:   &common.EventBase{AggregateID: aggregateID},
+		EventBase:   &domain.EventBase{AggregateID: aggregateID},
 		BookMakerID: bookMakerID,
 		FixtureID:   fixtureID,
 		HomeOdds:    homeOdds,
@@ -26,7 +28,7 @@ func NewOfferCreatedEvent(aggregateID, bookMakerID, fixtureID, homeOdds, awayOdd
 
 func NewBetPlacedEvent(aggregateID string, bet *bet) *betPlaced {
 	return &betPlaced{
-		EventBase: &common.EventBase{AggregateID: aggregateID},
+		EventBase: &domain.EventBase{AggregateID: aggregateID},
 		Bet:       bet,
 	}
 }

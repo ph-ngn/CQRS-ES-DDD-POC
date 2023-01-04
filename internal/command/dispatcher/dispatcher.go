@@ -5,7 +5,7 @@ import (
 	"github.com/andyj29/wannabet/internal/command/handler"
 )
 
-type Dispatcher interface {
+type Interface interface {
 	Dispatch(p command.Interface) error
 	RegisterHandler(command.Interface, handler.Interface) error
 }
