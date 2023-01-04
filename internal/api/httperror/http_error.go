@@ -1,4 +1,4 @@
-package common
+package httperror
 
 import "net/http"
 

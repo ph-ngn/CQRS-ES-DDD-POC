@@ -12,7 +12,7 @@
 
 ✔️  Go
 
-✔️  Auth0 / Okta Customer Identity Cloud
+✔️  Auth0 
 
 ✔️  Uber Zap 
 

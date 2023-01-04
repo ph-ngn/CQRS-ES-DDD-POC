@@ -1,6 +1,12 @@
 package main
 
 import (
+	"log"
+	"os"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/andyj29/wannabet/internal/api/controller"
 	appAccount "github.com/andyj29/wannabet/internal/application/account"
 	"github.com/andyj29/wannabet/internal/application/common"
 	appOffer "github.com/andyj29/wannabet/internal/application/offer"
@@ -11,11 +17,6 @@ import (
 	"github.com/andyj29/wannabet/internal/infrastructure/httpserver"
 	"github.com/andyj29/wannabet/internal/infrastructure/logger"
 	"github.com/andyj29/wannabet/internal/infrastructure/oauth"
-	accountAPI "github.com/andyj29/wannabet/internal/presentation/account"
-	offerAPI "github.com/andyj29/wannabet/internal/presentation/offer"
-	"github.com/go-chi/chi/v5"
-	"log"
-	"os"
 )
 
 func main() {
@@ -33,11 +34,11 @@ func main() {
 		log.Fatalf("Failed to build and register command handlers to dispatcher")
 	}
 
-	accountController := accountAPI.Controller{
+	accountController := controller.AccountController{
 		Dispatcher: cmdDispatcher,
 	}
 
-	offerController := offerAPI.Controller{
+	offerController := controller.OfferController{
 		Dispatcher:           cmdDispatcher,
 		GetRequestingAccount: oauth.ParseSub,
 	}
@@ -65,49 +66,44 @@ func buildAndRegisterCmdHandlers(cmdDispatcher common.Dispatcher) error {
 	accountRepo := datastore.NewRepository[*account.Account](eventStore)
 	offerRepo := datastore.NewRepository[*offer.Offer](eventStore)
 
-	registerAccountCMD := appAccount.RegisterAccount{}
 	registerAccountHandler := appAccount.RegisterAccountHandler{
 		Repo:     accountRepo,
 		EventBus: eventBus,
 	}
-	if err := cmdDispatcher.RegisterHandler(registerAccountCMD, &registerAccountHandler); err != nil {
+	if err := cmdDispatcher.RegisterHandler(appAccount.RegisterAccount{}, &registerAccountHandler); err != nil {
 		return err
 	}
 
-	addFundsCMD := appAccount.AddFunds{}
 	addFundsHandler := appAccount.AddFundsHandler{
 		Repo:     accountRepo,
 		EventBus: eventBus,
 	}
-	if err := cmdDispatcher.RegisterHandler(addFundsCMD, &addFundsHandler); err != nil {
+	if err := cmdDispatcher.RegisterHandler(appAccount.AddFunds{}, &addFundsHandler); err != nil {
 		return err
 	}
 
-	deductFundsCMD := appAccount.DeductFunds{}
 	deductFundsHandler := appAccount.DeductFundsHandler{
 		Repo:     accountRepo,
 		EventBus: eventBus,
 	}
-	if err := cmdDispatcher.RegisterHandler(deductFundsCMD, &deductFundsHandler); err != nil {
+	if err := cmdDispatcher.RegisterHandler(appAccount.DeductFunds{}, &deductFundsHandler); err != nil {
 		return err
 	}
 
-	createOfferCMD := appOffer.CreateOffer{}
 	creatOfferHandler := appOffer.CreateOfferHandler{
 		Repo:     offerRepo,
 		EventBus: eventBus,
 	}
-	if err := cmdDispatcher.RegisterHandler(createOfferCMD, &creatOfferHandler); err != nil {
+	if err := cmdDispatcher.RegisterHandler(appOffer.CreateOffer{}, &creatOfferHandler); err != nil {
 		return err
 	}
 
-	placeBetCMD := appOffer.PlaceBet{}
 	placeBetHandler := appOffer.PlaceBetHandler{
 		Repo:     offerRepo,
 		EventBus: eventBus,
 	}
 
-	if err := cmdDispatcher.RegisterHandler(placeBetCMD, &placeBetHandler); err != nil {
+	if err := cmdDispatcher.RegisterHandler(appOffer.PlaceBet{}, &placeBetHandler); err != nil {
 		return err
 	}
 
