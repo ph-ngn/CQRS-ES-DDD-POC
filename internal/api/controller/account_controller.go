@@ -11,7 +11,13 @@ import (
 )
 
 type AccountController struct {
-	dispatcher.Interface
+	dispatcher dispatcher.Interface
+}
+
+func NewAccountController(dispatcher dispatcher.Interface) *AccountController {
+	return &AccountController{
+		dispatcher: dispatcher,
+	}
 }
 
 func (c *AccountController) RegisterAccount(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +28,7 @@ func (c *AccountController) RegisterAccount(w http.ResponseWriter, r *http.Reque
 	}
 
 	cmd := command.NewRegisterAccountCommand(request.ID, request.Email, request.Name)
-	if err := c.Dispatch(cmd); err != nil {
+	if err := c.dispatcher.Dispatch(cmd); err != nil {
 		rw.WriteJSONErrorResponse(w, r, httperror.NewInternalError(err))
 		return
 	}

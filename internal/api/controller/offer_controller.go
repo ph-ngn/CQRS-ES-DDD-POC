@@ -11,8 +11,15 @@ import (
 )
 
 type OfferController struct {
-	dispatcher.Interface
-	GetRequestingAccount func(*http.Request) string
+	dispatcher           dispatcher.Interface
+	getRequestingAccount func(*http.Request) string
+}
+
+func NewOfferController(dispatcher dispatcher.Interface, getRequestingAccount func(r *http.Request) string) *OfferController {
+	return &OfferController{
+		dispatcher:           dispatcher,
+		getRequestingAccount: getRequestingAccount,
+	}
 }
 
 func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +29,7 @@ func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestingAccount := c.GetRequestingAccount(r)
+	requestingAccount := c.getRequestingAccount(r)
 	cmd := command.NewCreateOfferCommand("testID",
 		requestingAccount,
 		request.FixtureID,
@@ -30,7 +37,7 @@ func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 		request.AwayOdds,
 		request.Limit,
 		request.CurrencyCode)
-	if err := c.Dispatch(cmd); err != nil {
+	if err := c.dispatcher.Dispatch(cmd); err != nil {
 		rw.WriteJSONErrorResponse(w, r, httperror.NewInternalError(err))
 		return
 	}
@@ -50,9 +57,9 @@ func (c *OfferController) PlaceBet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestingAccount := c.GetRequestingAccount(r)
+	requestingAccount := c.getRequestingAccount(r)
 	cmd := command.NewPlaceBetCommand(request.OfferID, requestingAccount, request.Stake, request.CurrencyCode)
-	if err := c.Dispatch(cmd); err != nil {
+	if err := c.dispatcher.Dispatch(cmd); err != nil {
 		rw.WriteJSONErrorResponse(w, r, httperror.NewInternalError(err))
 		return
 	}
